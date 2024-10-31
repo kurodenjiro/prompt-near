@@ -20,7 +20,10 @@ import WidgetFrame2 from '@/public/assets/svgs/widget-frame-2.svg';
 import useSWR, { mutate } from 'swr';
 import { Textarea } from '@/components/ui/textarea';
 import MultiSelectTools from '../common/multi-select';
+import { CHAIN_LIST } from '@/components/constants/chain.constant';
+
 const COIN_LIST_URL = 'https://raw.githubusercontent.com/AnimeSwap/coin-list/main/aptos/mainnet.js';
+
 
 interface WidgetParam {
   name: string;
@@ -50,21 +53,24 @@ export function Tool({
   const [loadingFunctions, setLoadingFunctions] = useState<Record<string, boolean>>({});
   // const [coinList, setCoinList] = useState<Array<{ symbol: string; name: string; address: string }>>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isLoadingModules, setIsLoadingModules] = useState(false);
-  const [isLoadingPackages, setIsLoadingPackages] = useState(false);
+  const [isLoadingNetwork, setIsLoadingNetwork] = useState(false);
+  const [isLoadingChain, setIsLoadingChain] = useState(false);
   const [selectedWidgetTools, setSelectedWidgetTools] = useState<string[]>([]);
   const [previewWidgetCode, setPreviewWidgetCode] = useState<string>('');
   const [widgetPrompt, setWidgetPrompt] = useState<string>('');
   const [widgetCode, setWidgetCode] = useState<string>('');
   const [widgetParams, setWidgetParams] = useState<WidgetParam[]>([]);
 
+  const [selectedChain, setSelectedChain] = useState<string>('');
+  const [availableNetworks, setAvailableNetworks] = useState<string[]>([]);
+
   const form = useForm({
     mode: 'onChange',
     defaultValues: {
       address: '',
-      packages: [],
+      chain: [],
       functions: [],
-      modules: []
+      network: []
     }
   });
 
@@ -109,7 +115,7 @@ export function Tool({
 
   const { control, setValue } = form;
   //console.log('form', form.getValues());
-  const selectedModules = useWatch({ control, name: 'modules' });
+  const selectedNetwork = useWatch({ control, name: 'network' });
 
   const {
     handleSubmit,
@@ -117,126 +123,15 @@ export function Tool({
     watch
   } = form;
 
-  const loadSourceData = async (
-    loadSourceDataAccount: string,
-    packages: string[],
-    modules: string[],
-    loadSourceDataFunctions: string[]
-  ) => {
-    const newFunctions = loadSourceDataFunctions.filter(func => !sourceData[func]);
-
-    if (newFunctions.length === 0) return;
-
-    const newLoadingFunctions = newFunctions.reduce((acc, func) => ({ ...acc, [func]: true }), {});
-
-    setLoadingFunctions(prev => ({ ...prev, ...newLoadingFunctions }));
-
-    try {
-      const responses = await Promise.all(
-        newFunctions.map(async func => {
-          const response = await axios.get('/api/source', {
-            params: {
-              account: loadSourceDataAccount,
-              package: packages.join(','),
-              module: modules.join(','),
-              functions: func
-            }
-          });
-
-          setLoadingFunctions(prev => ({ ...prev, [func]: false }));
-
-          return { func, data: response.data };
-        })
-      );
-
-      const newSourceData = responses.reduce((acc: any, { func, data }) => {
-        acc[func] = data?.returns.length > 0 ? data?.returns[0] : data;
-
-        return acc;
-      }, {});
-
-      setSourceData(prev => ({ ...prev, ...newSourceData }));
-    } catch (error) {
-      console.error('Error fetching source data:', error);
-      setLoadingFunctions(prev => Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}));
-    }
-  };
-
-  //console.log('sourceData', sourceData);
-
-  const fetchModuleData = async (fetchModuleDataAccount: string) => {
-    setIsLoadingPackages(true);
-    try {
-      const response = await fetch(`/api/modules?account=${fetchModuleDataAccount}`);
-      const data = await response.json();
-
-      setModuleData(data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching module data:', error);
-      return null;
-    } finally {
-      setIsLoadingPackages(false);
-    }
-  };
-
-  const fetchFunctions = async (fetchFunctionAccount: string) => {
-    setIsLoadingModules(true);
-    try {
-      const response = await fetch(`/api/abis?account=${fetchFunctionAccount}`);
-      const data = await response.json();
-      setFunctions(data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching functions:', error);
-      return null;
-    } finally {
-      setIsLoadingModules(false);
-    }
-  };
-
-  const handleFetchModuleData = async () => {
-    const address = form.getValues('address');
-
-    if (address) {
-      const moduleDataRes = await fetchModuleData(address);
-      const functionsData = await fetchFunctions(address);
-
-      if (moduleDataRes) {
-        setModuleData(moduleDataRes);
-      }
-      if (functionsData) {
-        setFunctions(functionsData);
-      }
-    }
-  };
-
+  // Effect to update available networks based on selected chain
   useEffect(() => {
-    const subscription = watch((value, { name }) => {
-      if (name === 'address' && value.address) {
-        handleFetchModuleData();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [watch]);
-
-  //console.log('form', form.getValues());
-
-  const handleCheckboxChange = (name: 'packages' | 'modules' | 'functions', value: string) => {
-    const currentValues = form.getValues(name);
-    const newValues = currentValues.includes(value as never)
-      ? currentValues.filter((v: string) => v !== value)
-      : [...currentValues, value];
-
-    setValue(name, newValues as never[], { shouldValidate: true });
-
-    if (name === 'functions') {
-      const { address, packages, modules } = form.getValues();
-
-      loadSourceData(address, packages, modules, [value]); // Load data only for the newly selected function
+    const selectedChainData = CHAIN_LIST.find(chain => chain.chainId === selectedChain);
+    if (selectedChainData) {
+      setAvailableNetworks(selectedChainData.network);
+    } else {
+      setAvailableNetworks([]);
     }
-  };
+  }, [selectedChain]);
 
   const uploadDataToApi = async (data: any) => {
     try {
@@ -248,67 +143,7 @@ export function Tool({
     }
   };
 
-  // Function to handle changes in the default value
-  const handleDefaultValueChange = (funcName: string, paramName: string, newValue: string) => {
-    setSourceData((prevData: any) => {
-      const funcData = prevData[funcName] || {};
-      const params = funcData.params || {};
-
-      return {
-        ...prevData,
-        [funcName]: {
-          ...funcData,
-          params: {
-            ...params,
-            [paramName]: {
-              ...params[paramName],
-              default: newValue
-            }
-          }
-        }
-      };
-    });
-  };
-
-  // Function to handle changes in the description
-  const handleDescriptionChange = (funcName: string, paramName: string, newDescription: string) => {
-    setSourceData((prevData: any) => {
-      const funcData = prevData[funcName] || {};
-      const params = funcData.params || {};
-
-      return {
-        ...prevData,
-        [funcName]: {
-          ...funcData,
-          params: {
-            ...params,
-            [paramName]: {
-              ...params[paramName],
-              description: newDescription
-            }
-          }
-        }
-      };
-    });
-  };
-
-  const handleTokenSelection = (funcName: string, paramName: string, tokenAddress: string) => {
-    setSourceData((prevData: any) => ({
-      ...prevData,
-      [funcName]: {
-        ...prevData[funcName],
-        params: {
-          ...prevData[funcName].params,
-          [paramName]: {
-            ...prevData[funcName].params[paramName],
-            tokenAddress: tokenAddress
-          }
-        },
-        type_params: [tokenAddress]
-      }
-    }));
-  };
-
+ 
   const onSubmit = async () => {
     setIsOpenCreateTool(false);
     const selectedFunctions = form.getValues('functions');
@@ -321,7 +156,7 @@ export function Tool({
 
       const toolData = {
         typeName: 'contractTool',
-        name: `${form.getValues('address')}::${form.getValues('modules')[0]}::${funcName}`,
+        name: `${form.getValues('address')}::${form.getValues('network')[0]}::${funcName}`,
         description: sourceData[funcName].description || '',
         params: Object.entries(sourceData[funcName].params).reduce((acc: any, [key, value]: [string, any]) => {
           acc[key] = {
@@ -349,8 +184,8 @@ export function Tool({
     // Clear form data
     form.reset({
       address: '',
-      packages: [],
-      modules: [],
+      chain: [],
+      network: [],
       functions: []
     });
 
@@ -391,8 +226,8 @@ export function Tool({
     // Reset form data
     form.reset({
       address: '',
-      packages: [],
-      modules: [],
+      chain: [],
+      network: [],
       functions: []
     });
 
@@ -410,9 +245,9 @@ export function Tool({
   };
 
   const isFormValid = useCallback(() => {
-    const { address, packages, modules, functions: formFunctions } = form.getValues();
+    const { address, chain, network, functions: formFunctions } = form.getValues();
 
-    return isValid && address && packages.length > 0 && modules.length > 0 && formFunctions.length > 0;
+    return isValid && address && chain.length > 0 && network.length > 0 && formFunctions.length > 0;
   }, [form, isValid]);
 
   const handleCreateApiTool = async (data: any) => {
@@ -592,53 +427,51 @@ export function Tool({
             />
 
             <div className="mb-4">
-              <p className="mb-2 text-xl text-white">Packages</p>
+              <p className="mb-2 text-xl text-white">Chain</p>
               <DropdownSelect
                 className="w-full"
-                initialValue={form.getValues('packages')[0] || ''}
+                initialValue={form.getValues('chain')[0] || ''}
                 options={
-                  isLoadingPackages
-                    ? [{ value: '', label: 'Loading packages...' }]
-                    : moduleData && moduleData.length > 0
-                      ? [
-                        { value: '', label: 'Choose package' },
-                        ...moduleData.map((item: any) => ({ value: item.name, label: item.name }))
-                      ]
-                      : [{ value: '', label: 'No packages available' }]
+                  CHAIN_LIST && CHAIN_LIST.length > 0
+                    ? [
+                      { value: '', label: 'Choose chain' },
+                      ...CHAIN_LIST.map((item) => ({ value: item.chainId, label: item.chainId }))
+                    ]
+                    : [{ value: '', label: 'No chain available' }]
                 }
                 onSelect={selectedOption => {
-                  setValue('packages', [selectedOption] as never[], { shouldValidate: true });
+                  setSelectedChain(selectedOption);
+                  setValue('chain', [selectedOption] as never[], { shouldValidate: true });
+                  setValue('network', [''] as never[], { shouldValidate: true });
                 }}
               />
             </div>
 
             <div className="mb-4">
-              <p className="mb-2 text-xl text-white">Modules</p>
+              <p className="mb-2 text-xl text-white">Network</p>
               <DropdownSelect
                 className="w-full"
-                initialValue={form.getValues('modules')[0] || ''}
+                initialValue={form.getValues('network')[0] || ''}
                 options={
-                  isLoadingModules
-                    ? [{ value: '', label: 'Loading modules...' }]
-                    : functions && functions.length > 0
-                      ? [
-                        { value: '', label: 'Choose module' },
-                        ...functions.map((item: any) => ({ value: item.name, label: item.name }))
-                      ]
-                      : [{ value: '', label: 'No modules available' }]
+                  availableNetworks.length > 0
+                    ? [
+                      { value: '', label: 'Choose network' },
+                      ...availableNetworks.map((network) => ({ value: network, label: network.toUpperCase() }))
+                    ]
+                    : [{ value: '', label: 'No network available' }]
                 }
                 onSelect={selectedOption => {
-                  setValue('modules', [selectedOption] as never[], { shouldValidate: true });
+                  setValue('network', [selectedOption] as never[], { shouldValidate: true });
                 }}
               />
             </div>
 
-            {functions && selectedModules && selectedModules?.length > 0 && (
+            {functions && selectedNetwork && selectedNetwork?.length > 0 && (
               <div className="mb-4">
                 <p className="mb-2 text-xl text-white">Functions</p>
                 <div className="flex flex-col gap-3">
                   {functions
-                    .filter((item: any) => selectedModules.includes(item.name as never))
+                    .filter((item: any) => selectedNetwork.includes(item.name as never))
                     .flatMap((item: any) =>
                       item.exposed_functions.map((func: any) => (
                         <div key={`${item.name}-${func.name}`}>
@@ -647,7 +480,7 @@ export function Tool({
                               type="checkbox"
                               className="mr-2"
                               checked={form.getValues('functions').includes(func.name as never)}
-                              onChange={() => handleCheckboxChange('functions', func.name)}
+                              
                             />
                             {func.name}
                           </label>
@@ -667,21 +500,21 @@ export function Tool({
                                           className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
                                           value={paramData.description}
                                           rows={2}
-                                          onChange={e => handleDescriptionChange(func.name, paramName, e.target.value)}
+                                          
                                         />
                                         <input
                                           type="text"
                                           className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
                                           value={paramData.default || ''}
                                           placeholder={`Default value`}
-                                          onChange={e => handleDefaultValueChange(func.name, paramName, e.target.value)}
+                                         
                                         />
                                         {func.generic_type_params && func.generic_type_params.length > 0 && (
                                           <div className="mt-2">
                                             <p className="mb-1 text-white">Select Token:</p>
                                             <select
                                               className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white"
-                                              onChange={e => handleTokenSelection(func.name, paramName, e.target.value)}
+                                              
                                             >
                                               <option value="">Select a token</option>
                                               {coinList.map((coin: any) => (

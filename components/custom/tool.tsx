@@ -143,6 +143,21 @@ export function Tool({
     }
   };
 
+  const handleSelectNetwork = async (selectedOption: string) => {
+    setValue('network', [selectedOption] as never[], { shouldValidate: true });
+    loadFunctions();
+  };
+
+  const loadFunctions = async () => {
+    const response = await axios.get(`/api/abis?account=${form.getValues('address')}`);
+    console.log('abis', response.data);
+    setFunctions(response.data);
+  };
+
+  const loadSourceData = async () => {
+    const response = await axios.get(`/api/source?account=${form.getValues('address')}&methods=${form.getValues('functions').join(',')}`);
+    setSourceData(response.data);
+  };
  
   const onSubmit = async () => {
     setIsOpenCreateTool(false);
@@ -460,9 +475,7 @@ export function Tool({
                     ]
                     : [{ value: '', label: 'No network available' }]
                 }
-                onSelect={selectedOption => {
-                  setValue('network', [selectedOption] as never[], { shouldValidate: true });
-                }}
+                onSelect={handleSelectNetwork}
               />
             </div>
 

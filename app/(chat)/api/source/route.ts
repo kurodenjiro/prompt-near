@@ -6,7 +6,7 @@ import { contractTool } from '@/ai/contract-tool';
 export const maxDuration = 300;
 
 const formatSourceCodePath = (path: String, lang: String) => {
-  let segments = path.split('/');
+  let segments = path ? path.split('/') : [];
 
   segments.pop();
   if (lang === 'rust') {
@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
       finality: 'final',
     });
     const data = JSON.parse(Buffer.from(ipfs.result).toString());
+    console.log('data', data);
     const sourcePath = formatSourceCodePath(data.entry_point, data.lang);
 
     const baseUrl = "https://api.sourcescan.dev/api/ipfs/structure";

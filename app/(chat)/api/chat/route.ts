@@ -66,8 +66,8 @@ export async function POST(request: Request) {
           ([key, value]) => value !== undefined
         )
       );
-      
-      console.log(item)
+
+      console.log(item);
       console.log(item.typeName + '_' + item.type + '_' + item.network);
       tool[
         item.typeName +
@@ -89,8 +89,8 @@ export async function POST(request: Request) {
             });
             const res: any = await provider.query({
               request_type: 'call_function',
-              account_id: 'v2-verifier.sourcescan.near',
-              method_name: 'get_contract',
+              account_id: item.name,
+              method_name: item.method,
               args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
                 'base64'
               ),

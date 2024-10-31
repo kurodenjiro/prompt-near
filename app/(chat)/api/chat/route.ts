@@ -67,40 +67,21 @@ export async function POST(request: Request) {
         )
       );
       const [account] = item.name.split('::');
-      if (item.chain == 'near' && item.typeMethod == 'call') {
-        tool[
-          'cT' +
-            '_' +
-            'c' +
-            '_' +
-            'n' +
-            '_' +
-            item.methods +
-            '_' +
-            account.replace('.near', '')
-        ] = {
-          description: item.description,
-          parameters: z.object(ParametersSchema),
-        };
-      }
-      if (item.chain == 'near' && item.typeMethod == 'view') {
-        tool[
-          'cT' +
-            '_' +
-            'v' +
-            '_' +
-            'n' +
-            '_' +
-            item.methods +
-            '_' +
-            account.replace('.near', '')
-        ] = {
-          description: item.description,
-          parameters: z.object(ParametersSchema),
-          execute: async (ParametersData: ParametersData) => {
+      console.log(
+        `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}`
+      );
+      tool[
+        `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}`
+      ] = {
+        description: item.description,
+        parameters: z.object(ParametersSchema),
+        execute: async (ParametersData: ParametersData) => {
+          let data;
+          if (item.chain == 'near' && item.typeMethod == 'view') {
             const provider = new providers.JsonRpcProvider({
               url: `https://rpc.${item.network}.near.org`,
             });
+
             const res: any = await provider.query({
               request_type: 'call_function',
               account_id: account,
@@ -112,9 +93,24 @@ export async function POST(request: Request) {
             });
             const data = JSON.parse(Buffer.from(res.result).toString());
             return `data: ${JSON.stringify(data)}`;
-          },
-        };
-      }
+          }
+          if (item.chain == 'eth') {
+          }
+          if (item.chain == 'near' && item.typeMethod == 'call') {
+            const data = {
+              request_type: 'call_function',
+              account_id: account,
+              method_name: item.method,
+              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
+                'base64'
+              ),
+              finality: 'final',
+            };
+            return `data: ${JSON.stringify(data)}`;
+          }
+          return 'i dont userstand . pls explain';
+        },
+      };
       //if view return data
     }
     if (item.typeName == 'widgetTool') {

@@ -109,24 +109,23 @@ export const Message = ({
                   <div className="flex flex-col gap-4">
                     {toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } = toolInvocation;
-                      const [typeName, typeMethod, chain, methods, account] = toolName.split("_")
                       if (state === 'result') {
                         const { result } = toolInvocation;
-
+                        const [typeName, methods, account] = toolName.split('0-')
+                        console.log(typeName, methods, account)
                         return (
                           <div key={toolCallId}>
-
-
                             {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
-                              `Calling ${typeName == 'contractTool' ? 'Contract' :
-                                typeName == 'widgetTool' ? 'Widget' :
-                                  typeName == 'apiTool' ? 'API Tool' :
-                                    'unknow Tool'}
+                              typeName == 'cTcn' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
+                                `Calling ${typeName == 'cT' ? 'Contract' :
+                                  typeName == 'widgetTool' ? 'Widget' :
+                                    typeName == 'apiTool' ? 'API Tool' :
+                                      'unknow Tool'}
                                     ${toolCallId}`}
                           </div>
                         );
                       } else {
-
+                        const [typeName, typeMethod, chain, methods, account] = toolName.split("_")
                         return (
                           <div key={toolCallId} className="skeleton">
                             {typeName == 'cT' && typeMethod == 'c' && chain == 'n' ? <SmartAction props={args} methods={methods} receiverId={account} /> : ""}

@@ -22,8 +22,8 @@ export default function Page() {
           />
           <div className="mb-20 mt-5 flex w-full flex-col gap-3 sm:gap-5">
             <div className='relative z-1 flex h-full flex-col gap-12 px-10 py-14 sm:gap-8 sm:px-7'>
-              <h1 className="text-xs sm:text-xl">Welcome to Aptos</h1>
-              <p className="text-[10px] sm:text-xs">Sign in with your Near account to continue</p>
+              <h1 className="text-xs sm:text-xl">Welcome to Onchain Agent</h1>
+              <p className="text-[10px] sm:text-xs">Sign in with your near account to continue</p>
               <WalletSelector />
             </div>
 

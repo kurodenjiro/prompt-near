@@ -15,7 +15,7 @@ type MainHeaderProps = ComponentBaseProps & {
   title?: string;
 };
 
-const MainHeader: FC<MainHeaderProps> = ({ className, title = 'Prompt Wallet' }) => {
+const MainHeader: FC<MainHeaderProps> = ({ className, title = 'Onchain Agent' }) => {
   return (
     <div className={classNames('flex w-full max-w-[1440px] shrink-0 flex-row items-start justify-center', className)}>
       <div className="hidden grow lg:block">

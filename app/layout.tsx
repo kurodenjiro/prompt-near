@@ -86,9 +86,9 @@ export default async function RootLayout({
             style={{ backgroundImage: `url(${Backdrop.src})` }}
           >
             <WalletProvider>
-              <Toaster />
               {children}
             </WalletProvider>
+            <Toaster />
           </div>
         </ThemeProvider>
       </body>

@@ -152,6 +152,38 @@
   }
 }
 
+@layer components {
+  .toast {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutToTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.data-[state=open]:animate-in {
+  animation: slideInFromTop 150ms ease-out;
+}
+
+.data-[state=closed]:animate-out {
+  animation: slideOutToTop 150ms ease-in;
+}
+
 @layer base {
   input[type='number'] {
     -moz-appearance: textfield; /* Firefox */

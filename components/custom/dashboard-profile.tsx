@@ -11,20 +11,12 @@ import { collapseAddress } from '@/components/utils/address';
 import ProfileElementDecor1 from '@/public/assets/svgs/profile-element-decor-1.svg';
 import DashboardAvatar from './dashboard-avatar';
 import DashboardTopProfileDecor from './dashboard-top-profile-decor';
-import {
-  APTOS_CONNECT_ACCOUNT_URL,
-  isAptosConnectWallet,
-  truncateAddress,
-  useWallet
-} from '@aptos-labs/wallet-adapter-react';
 import { signOut } from 'next-auth/react';
 import AugmentedPopup from '@/components/augmented/components/augmented-popup';
 import { Button } from '@/components/ui/button';
-import { getAptosClient } from '@/components/utils/aptos-client';
-import { InputGenerateTransactionPayloadData } from '@aptos-labs/ts-sdk';
 import { useToast } from '@/hooks/use-toast';
 import AptosReceiveModal from './aptos-receive-modal';
-import { useSearchParams } from 'next/navigation';
+import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 
 import {
   DropdownMenu,
@@ -32,49 +24,50 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { getAptosBalance } from '@/components/utils/aptos-client';
 import { User } from '@/db/schema';
-
-
+import { useSearchParams } from 'next/dist/client/components/navigation';
 
 const DashboardProfile = ({ user }: { user: User | null }) => {
   const [balance, setBalance] = useState<string | null>(null);
   const [isOpenSend, setIsOpenSend] = useState<boolean>(false);
   const [amount, setAmount] = useState<string | null>(null);
-  const [accountAddress, setAccountAddress] = useState<string | null>(null);
   const [receive, setReceive] = useState<string | null>(null);
   const [isOpenReceive, setIsOpenReceive] = useState<boolean>(false);
   const [pending, setPending] = useState<boolean>(false);
   const { toast } = useToast();
-  const { account, signAndSubmitTransaction, wallet, disconnect } = useWallet();
-  const aptosClient = getAptosClient();
+  const { accountId, selector,getBalance,callMethod,sendToken } = useWalletSelector();
+  const search = useSearchParams();
+  const transactionHash = search.get('transactionHashes');
+  const [toastShown, setToastShown] = useState<boolean>(false);
 
-
-  const loadBalance = useCallback(async () => {
-    try {
-      if (account?.address) {
-        setAccountAddress(account.address.toString())
-        const balance = await getAptosBalance(account?.address.toString());
-        setBalance(Number(balance).toFixed(2));
-      }
-      if (user) {
-
-        const balance = await getAptosBalance(user?.username);
-        setBalance(Number(balance).toFixed(2));
-        setAccountAddress(user?.username)
-      }
-
-
-    } catch (error) {
-      console.error('Error loading balance:', error);
-    }
-  }, [account, user]);
+  const showToast = useCallback((props: { title: string; description: string; variant?: 'default' | 'destructive' }) => {
+    toast({
+      ...props,
+      duration: 3000,
+    });
+  }, [toast]);
 
   useEffect(() => {
-    if (account || user) {
-      loadBalance();
+    if (transactionHash && !toastShown) {
+      showToast({
+        title: 'Success',
+        description: 'Transaction sent successfully.'
+      });
+      setToastShown(false);
     }
-  }, []);
+  }, [transactionHash, showToast]);
+
+  useEffect(() => {
+    if (transactionHash) {
+      setToastShown(true);
+    }
+  }, [transactionHash]);
+
+  useEffect(() => {
+    if (accountId) {
+      getBalance(accountId).then((balance) => setBalance(balance.toString()));
+    }
+  }, [accountId]);
 
   const toggleOpenSend = () => {
     setIsOpenSend(!isOpenSend);
@@ -90,106 +83,65 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
 
   const onTransfer = async () => {
     setPending(true);
-    if (!account) return;
-    if (parseFloat(amount as string) > parseFloat(balance || '0')) {
-      toast({
-        title: 'Not enough balance',
-        description: 'Please check your balance and try again.',
-        duration: 3000 // Auto-close after 3 seconds
-      });
-      setPending(false);
-      return;
-    }
-
     try {
-      const data: InputGenerateTransactionPayloadData = {
-        function: '0x1::coin::transfer',
-        typeArguments: ['0x1::aptos_coin::AptosCoin'],
-        functionArguments: [receive, (parseFloat(amount as string) * 1e8).toString()]
-      };
-      const committedTxn = await signAndSubmitTransaction({
-        sender: account.address,
-        data
-      });
-      await aptosClient.waitForTransaction({
-        transactionHash: committedTxn.hash
-      });
-
-      console.log('committedTxn', committedTxn);
-      setAmount(null);
-      setReceive(null);
-      toast({
-        title: 'Send Successful!',
-        description: 'Your transaction has been processed.',
-        duration: 5000, // Auto-close after 5 seconds
-        action: (
-          <Button
-            onClick={() =>
-              window.open(
-                `https://explorer.aptoslabs.com/txn/${committedTxn.hash}?network=${process.env.APTOS_NETWORK}`,
-                '_blank'
-              )
-            }
-          >
-            View on Explorer
-          </Button>
-        )
+      await sendToken(receive as string, amount as string);
+      showToast({
+        title: 'Success',
+        description: 'Transaction initiated successfully.'
       });
       setPending(false);
       handleCloseSend();
-      loadBalance();
-    } catch (err) {
-      console.error('Error', err);
-      toast({
-        title: 'Failed to transfer token',
-        description: 'Please try again.',
-        duration: 3000 // Auto-close after 3 seconds
+    } catch (error) {
+      console.error('Error sending transaction:', error);
+      showToast({
+        title: 'Error',
+        description: 'Failed to send transaction.',
+        variant: 'destructive'
       });
       setPending(false);
     }
   };
 
   const copyAddress = useCallback(async () => {
-    if (!accountAddress) return;
+    if (!accountId) return;
     try {
-      await navigator.clipboard.writeText(accountAddress);
-      toast({
+      await navigator.clipboard.writeText(accountId);
+      showToast({
         title: 'Success',
         description: 'Copied wallet address to clipboard.'
       });
     } catch {
-      toast({
-        variant: 'destructive',
+      showToast({
         title: 'Error',
-        description: 'Failed to copy wallet address.'
+        description: 'Failed to copy wallet address.',
+        variant: 'destructive'
       });
     }
-  }, [accountAddress, toast]);
+  }, [accountId, showToast]);
 
   const copyProfileLink = useCallback(async () => {
-    const profileUrl = `${window.location.origin}/profile/${accountAddress}`;
+    const profileUrl = `${window.location.origin}/profile/${accountId}`;
     try {
       await navigator.clipboard.writeText(profileUrl);
-      toast({
+      showToast({
         title: 'Success',
         description: 'Copied profile link to clipboard.'
       });
     } catch {
-      toast({
-        variant: 'destructive',
+      showToast({
         title: 'Error',
-        description: 'Failed to copy profile link.'
+        description: 'Failed to copy profile link.',
+        variant: 'destructive'
       });
     }
-  }, [accountAddress, toast]);
+  }, [accountId, showToast]);
 
-  const handleDisconnect = useCallback(async () => {
-    if (account) {
-      await disconnect();
-    }
-    await signOut();
-  }, [disconnect]);
-
+  const disconnect = async() => {
+    signOut();
+    const wallet = await selector.wallet();
+    await wallet.signOut();
+  }
+  
 
   return (
     <BoderImage className={classNames('relative flex w-full max-w-[483px] justify-center')}>
@@ -200,7 +152,7 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
             <DashboardAvatar className="shrink-0" imageUrl={'/assets/images/avatar/avatar-1.jpeg'} altText="Avatar" />
             <div className="flex w-full flex-col items-start gap-3">
               <p className="text-wrap break-words text-xl font-bold">
-                {accountAddress && collapseAddress(accountAddress)}
+                {accountId && collapseAddress(accountId)}
               </p>
               <p className="text-sm">Welcome back</p>
             </div>
@@ -215,7 +167,7 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/profile/${accountAddress}`}
+                  href={`/profile/${accountId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex gap-2"
@@ -226,14 +178,14 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
               <DropdownMenuItem onSelect={copyProfileLink} className="gap-2">
                 <Share2 className="h-4 w-4" /> Share Profile
               </DropdownMenuItem>
-              {wallet && isAptosConnectWallet(wallet) && (
+              {/*{wallet && isAptosConnectWallet(wallet) && (
                 <DropdownMenuItem asChild>
                   <a href={APTOS_CONNECT_ACCOUNT_URL} target="_blank" rel="noopener noreferrer" className="flex gap-2">
                     <UserUI className="h-4 w-4" /> Account
                   </a>
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onSelect={handleDisconnect} className="gap-2">
+              )}*/}
+              <DropdownMenuItem onSelect={disconnect} className="gap-2">
                 <LogOut className="h-4 w-4" /> Disconnect
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -243,7 +195,7 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
         <div className="relative flex flex-wrap justify-between gap-2">
           <div className="flex grow flex-col gap-2">
             <p className="text-base text-[#636363]">Total balance</p>
-            <p className="text-h2">{balance ? balance : '0'}</p>
+            <p className="text-h2">{balance ? Number(balance).toFixed(2) : '0'}</p>
           </div>
           <div
             className="flex shrink-0 flex-col justify-end font-semibold underline"
@@ -295,7 +247,7 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
         <AptosReceiveModal
           isOpen={isOpenReceive}
           onClose={() => setIsOpenReceive(false)}
-          address={accountAddress as string}
+          address={accountId as string}
         />
       </div>
     </BoderImage>

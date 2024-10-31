@@ -9,6 +9,7 @@ import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { setupHereWallet } from "@near-wallet-selector/here-wallet";
 import { setupBitteWallet } from "@near-wallet-selector/bitte-wallet";
 import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
+import { providers, utils } from "near-api-js";
 
 import type { ReactNode } from "react";
 import React, {
@@ -33,6 +34,20 @@ interface WalletSelectorContextValue {
     modal: WalletSelectorModal;
     accounts: Array<AccountState>;
     accountId: string | null;
+    viewMethod: (params: {
+        contractId: string;
+        method: string;
+        args?: Record<string, unknown>;
+    }) => Promise<any>;
+    getBalance: (accountId: string) => Promise<number>;
+    callMethod: (params: {
+        contractId: string;
+        method: string;
+        args?: Record<string, unknown>;
+        gas?: string;
+        deposit?: string;
+    }) => Promise<any>;
+    sendToken: (receiverId: string, amount: string) => Promise<any>;
 }
 
 const WalletSelectorContext =
@@ -120,14 +135,159 @@ export const WalletSelectorContextProvider: React.FC<{
         };
     }, [selector, modal]);
 
+    const viewMethod = useCallback(
+        async ({
+            contractId,
+            method,
+            args = {},
+        }: {
+            contractId: string;
+            method: string;
+            args?: Record<string, unknown>;
+        }) => {
+            if (!selector) return null;
+            
+            const { network } = selector.options;
+            const url = `https://rpc.${network.networkId}.near.org`;
+            const provider = new providers.JsonRpcProvider({ url });
+
+            const res = await provider.query({
+                request_type: "call_function",
+                account_id: contractId,
+                method_name: method,
+                args_base64: Buffer.from(JSON.stringify(args)).toString("base64"),
+                finality: "optimistic",
+            });
+            // @ts-ignore
+            return JSON.parse(Buffer.from(res?.result).toString());
+        },
+        [selector]
+    );
+
+    const getBalance = useCallback(
+        async (accountId: string) => {
+            if (!selector) return 0;
+            
+            const { network } = selector.options;
+            const provider = new providers.JsonRpcProvider({ url: network.nodeUrl });
+
+            try {
+                // Retrieve account state from the network
+                const account: any = await provider.query({
+                    request_type: 'view_account',
+                    account_id: accountId,
+                    finality: 'final',
+                });
+
+                // Format the amount and remove commas
+                const amountString = utils.format.formatNearAmount(account?.amount);
+                const amount = Number(amountString.replace(/,/g, "").trim());
+
+                // Return amount in NEAR
+                return account?.amount ? amount : 0;
+            } catch (error) {
+                console.error('Error getting balance:', error);
+                return 0;
+            }
+        },
+        [selector]
+    );
+
+    const callMethod = useCallback(
+        async ({
+            contractId,
+            method,
+            args = {},
+            gas = '30000000000000',
+            deposit = '0'
+        }: {
+            contractId: string;
+            method: string;
+            args?: Record<string, unknown>;
+            gas?: string;
+            deposit?: string;
+        }) => {
+            if (!selector) return null;
+
+            try {
+                // Get the wallet
+                const wallet = await selector.wallet();
+                
+                // Check if we have an active account
+                if (!accounts.length) {
+                    await modal?.show();
+                    return null;
+                }
+
+                const outcome = await wallet.signAndSendTransaction({
+                    receiverId: contractId,
+                    actions: [
+                        {
+                            type: 'FunctionCall',
+                            params: {
+                                methodName: method,
+                                args,
+                                gas,
+                                deposit,
+                            },
+                        },
+                    ],
+                });
+
+                return outcome;
+            } catch (error) {
+                console.error('Error calling method:', error);
+                throw error;
+            }
+        },
+        [selector, modal, accounts]
+    );
+
+    const sendToken = useCallback(
+        async (receiverId: string, amount: string) => {
+            if (!selector) return null;
+
+            try {
+                const wallet = await selector.wallet();
+                
+                if (!accounts.length) {
+                    await modal?.show();
+                    return null;
+                }
+
+                const outcome = await wallet.signAndSendTransaction({
+                    actions: [
+                        {
+                            type: 'Transfer',
+                            params: {
+                                deposit: utils.format.parseNearAmount(amount) || '0',
+                            },
+                        },
+                    ],
+                    receiverId,
+                });
+
+                return outcome;
+            } catch (error) {
+                console.error('Error sending money:', error);
+                throw error;
+            }
+        },
+        [selector, modal, accounts]
+    );
+
     const walletSelectorContextValue = useMemo<WalletSelectorContextValue>(
         () => ({
             selector: selector!,
             modal: modal!,
             accounts,
             accountId: accounts.find((account) => account.active)?.accountId || null,
+            viewMethod,
+            getBalance,
+            callMethod,
+            sendToken,
         }),
-        [selector, modal, accounts]
+        [selector, modal, accounts, viewMethod, getBalance, callMethod, sendToken]
     );
 
     if (loading) {

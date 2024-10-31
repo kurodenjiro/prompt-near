@@ -3,11 +3,8 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import StringToReactComponent from 'string-to-react-component';
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
 import {ErrorFallback} from '@/components/common/error-boundary'
 export const ViewFrame = ({ code }: { code: string }) => {
-  const config = new AptosConfig({ network: Network.MAINNET });
-  const aptos = new Aptos(config);
 
   const truncateAddress = (address: string, startLength: number = 6, endLength: number = 4) => {
     if (address.length <= startLength + endLength) return address;
@@ -47,7 +44,7 @@ export const ViewFrame = ({ code }: { code: string }) => {
   return (
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div> }>
-        <StringToReactComponent data={{ useEffect, useState, aptos, processData }}>
+        <StringToReactComponent data={{ useEffect, useState, processData }}>
           {truncatedCode}
         </StringToReactComponent>
       </ErrorBoundary>
@@ -56,8 +53,6 @@ export const ViewFrame = ({ code }: { code: string }) => {
 };
 
 export const ViewFrameDashboard = ({ code, id }: { code: string; id: string }) => {
-  const config = new AptosConfig({ network: Network.MAINNET });
-  const aptos = new Aptos(config);
 
   const truncateAddress = (address: string, startLength: number = 6, endLength: number = 4) => {
     if (address.length <= startLength + endLength) return address;
@@ -99,7 +94,7 @@ export const ViewFrameDashboard = ({ code, id }: { code: string; id: string }) =
   return (
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <StringToReactComponent data={{ useEffect, useState, aptos, processData, widgetId: id }}>
+        <StringToReactComponent data={{ useEffect, useState, processData, widgetId: id }}>
           {truncatedCode != "default" && truncatedCode != "" && JSON.parse(truncatedCode)}
         </StringToReactComponent>
       </ErrorBoundary>

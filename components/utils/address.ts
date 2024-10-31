@@ -11,6 +11,10 @@ export function padAddressIfNeeded(address: string) {
   }
   
   export const collapseAddress = (address: string): string => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    if (address.length > 40) {
+      address = address.slice(0, 15);
+    }
+    
+    return address;
   };
   

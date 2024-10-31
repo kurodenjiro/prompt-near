@@ -55,6 +55,7 @@ export function Tool({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingNetwork, setIsLoadingNetwork] = useState(false);
   const [isLoadingChain, setIsLoadingChain] = useState(false);
+  const [isLoadingSource, setIsLoadingSource] = useState(false);
   const [selectedWidgetTools, setSelectedWidgetTools] = useState<string[]>([]);
   const [previewWidgetCode, setPreviewWidgetCode] = useState<string>('');
   const [widgetPrompt, setWidgetPrompt] = useState<string>('');
@@ -149,42 +150,96 @@ export function Tool({
   };
 
   const loadFunctions = async () => {
-    const response = await axios.get(`/api/abis?account=${form.getValues('address')}`);
-    console.log('abis', response.data);
-    setFunctions(response.data);
+    setIsLoadingSource(true);
+    const response = await axios.get(`/api/abis?account=${form.getValues('address')}&chain=${form.getValues('chain')[0]}&network=${form.getValues('network')[0]}`);
+    console.log('abis', response.data.body.functions);
+    setFunctions(response.data.body.functions);
+    setIsLoadingSource(false);
   };
 
-  const loadSourceData = async () => {
-    const response = await axios.get(`/api/source?account=${form.getValues('address')}&methods=${form.getValues('functions').join(',')}`);
-    setSourceData(response.data);
+
+  const loadSourceData = async (address: string, chain: string[], network: string[], funcName: string[]) => {
+    const newFunctions = funcName.filter(func => !sourceData[func]);
+
+    if (newFunctions.length === 0) return;
+
+    const newLoadingFunctions = newFunctions.reduce((acc, func) => ({ ...acc, [func]: true }), {});
+
+    setLoadingFunctions(prev => ({ ...prev, ...newLoadingFunctions }));
+
+    try {
+      const responses = await Promise.all(
+        newFunctions.map(async func => {
+          const response = await axios.get('/api/source', {
+            params: {
+              account: address,
+              methods: func,
+              network: network[0],
+              chain: chain[0]
+            }
+          });
+
+          setLoadingFunctions(prev => ({ ...prev, [func]: false }));
+
+          return { func, data: response.data };
+        })
+      );
+
+      const newSourceData = responses.reduce((acc: any, { func, data }) => {
+        acc[func] = data?.returns.length > 0 ? data?.returns[0] : data;
+
+        return acc;
+      }, {});
+
+      setSourceData(prev => ({ ...prev, ...newSourceData }));
+    } catch (error) {
+      console.error('Error fetching source data:', error);
+      setLoadingFunctions(prev => Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}));
+    }
+
   };
+
+  const handleCheckboxChange = (name: 'chain' | 'network' | 'functions', value: string) => {
+    const currentValues = form.getValues(name);
+    const newValues = currentValues.includes(value as never)
+      ? currentValues.filter((v: string) => v !== value)
+      : [...currentValues, value];
+
+    setValue(name, newValues as never[], { shouldValidate: true });
+
+    if (name === 'functions') {
+      const { address, chain, network } = form.getValues();
+
+      loadSourceData(address, chain, network, [value]); // Load data only for the newly selected function
+    }
+  };
+
  
   const onSubmit = async () => {
     setIsOpenCreateTool(false);
     const selectedFunctions = form.getValues('functions');
 
     for (const funcName of selectedFunctions) {
-      const selectedModule = functions.find((module: any) =>
-        module.exposed_functions.some((func: any) => func.name === funcName)
+      const selectedMethod = functions.find((func: any) =>
+        func.name === funcName
       );
-      const selectedFunction = selectedModule?.exposed_functions.find((func: any) => func.name === funcName);
 
       const toolData = {
         typeName: 'contractTool',
         name: `${form.getValues('address')}::${form.getValues('network')[0]}::${funcName}`,
         description: sourceData[funcName].description || '',
-        params: Object.entries(sourceData[funcName].params).reduce((acc: any, [key, value]: [string, any]) => {
-          acc[key] = {
+        args: Object.entries(sourceData[funcName].args).map(([key, value]: [string, any])  => {
+          return {
+            name: value.name,
             type: value.type,
             description: value.description
           };
-
-          return acc;
-        }, {}),
-        type_params: sourceData[funcName].generic_type_params || [],
-        typeFunction: selectedFunction?.is_entry ? 'entry' : selectedFunction?.is_view ? 'view' : '',
-        functions: funcName,
-        userId: userId
+        }),
+        typeMethod: selectedMethod?.kind || '',
+        methods: funcName,
+        userId: userId,
+        network: form.getValues('network')[0],
+        chain: form.getValues('chain')[0]
       };
 
       console.log('Tool data:', toolData);
@@ -221,20 +276,6 @@ export function Tool({
     }
   });
 
-
-  const { data: coinList, error: coinListError } = useSWR(COIN_LIST_URL, async (url) => {
-    try {
-      const response = await axios.get(url, {
-        responseType: 'text'
-      });
-      const jsData = response.data;
-      // eslint-disable-next-line no-eval
-      return eval(jsData);
-    } catch (error) {
-      console.error('Error fetching or parsing coin list:', error);
-      return [];
-    }
-  });
 
   const handleClose = () => {
     setIsOpenCreateTool(false);
@@ -394,8 +435,28 @@ export function Tool({
 
   };
 
+  // for (const funcName of form.getValues('functions')) {
+  //     const selectedModule = functions.find((func: any) =>
+  //       func.name === funcName
+  //     );
+  //   console.log(selectedModule)
+  // }
 
-  //console.log(widgetParamsForm.getValues())
+//   {
+//     "name": "set_greeting",
+//     "kind": "call",
+//     "params": {
+//         "serialization_type": "json",
+//         "args": [
+//             {
+//                 "name": "greeting",
+//                 "type_schema": {
+//                     "type": "string"
+//                 }
+//             }
+//         ]
+//     }
+// }
 
   return (
     <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -450,7 +511,7 @@ export function Tool({
                   CHAIN_LIST && CHAIN_LIST.length > 0
                     ? [
                       { value: '', label: 'Choose chain' },
-                      ...CHAIN_LIST.map((item) => ({ value: item.chainId, label: item.chainId }))
+                      ...CHAIN_LIST.map((item) => ({ value: item.chainId, label: item.symbol }))
                     ]
                     : [{ value: '', label: 'No chain available' }]
                 }
@@ -479,79 +540,67 @@ export function Tool({
               />
             </div>
 
-            {functions && selectedNetwork && selectedNetwork?.length > 0 && (
+            {!isLoadingSource ? (functions && selectedNetwork && selectedNetwork?.length > 0 && (
               <div className="mb-4">
-                <p className="mb-2 text-xl text-white">Functions</p>
+                <p className="mb-2 text-xl text-white">Methods</p>
                 <div className="flex flex-col gap-3">
-                  {functions
-                    .filter((item: any) => selectedNetwork.includes(item.name as never))
-                    .flatMap((item: any) =>
-                      item.exposed_functions.map((func: any) => (
-                        <div key={`${item.name}-${func.name}`}>
-                          <label className="mb-2 flex items-center text-[#6B7280]">
-                            <input
-                              type="checkbox"
-                              className="mr-2"
-                              checked={form.getValues('functions').includes(func.name as never)}
-                              
-                            />
-                            {func.name}
-                          </label>
-                          {form.getValues('functions').includes(func.name as never) && (
-                            <div className="ml-6 mt-2">
-                              {loadingFunctions[func.name] ? (
-                                <div className="flex items-center gap-2">
-                                  <p>Loading source data for {func.name}...</p>
+                  {functions.map((func: any) => (
+                    <div key={func.name}>
+                    <label className="mb-2 flex items-center text-[#6B7280]">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={form.getValues('functions').includes(func.name as never)}
+                        onChange={() => handleCheckboxChange('functions', func.name)}
+                      />
+                      {func.name}
+                    </label>
+                    {form.getValues('functions').includes(func.name as never) && (
+                      <div className="ml-6 mt-2">
+                        {loadingFunctions[func.name] ? (
+                          <div className="flex items-center gap-2">
+                            <p>Loading method data for {func.name}...</p>
+                          </div>
+                        ) : sourceData[func.name] ? (
+                          <div className="flex flex-col gap-2">
+                            {Object.entries(sourceData[func.name].args).map(
+                              ([paramName, paramData]: [string, any]) => (
+                                <div key={paramName} className="flex flex-col gap-2">
+                                  <p className="capitalize text-white">{paramData.name}</p>
+                                  <textarea
+                                    className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
+                                    value={paramData.type}
+                                    rows={2}
+                                    
+                                  />
+                                  <textarea
+                                    className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
+                                    value={paramData.description}
+                                    rows={2}
+                                    
+                                  />
+                                  <input
+                                    type="text"
+                                    className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
+                                    value={paramData.default || ''}
+                                    placeholder={`Default value`}
+                                   
+                                  />
                                 </div>
-                              ) : sourceData[func.name] ? (
-                                <div className="flex flex-col gap-2">
-                                  {Object.entries(sourceData[func.name].params).map(
-                                    ([paramName, paramData]: [string, any]) => (
-                                      <div key={paramName} className="flex flex-col gap-2">
-                                        <p className="capitalize text-white">{paramName}</p>
-                                        <textarea
-                                          className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
-                                          value={paramData.description}
-                                          rows={2}
-                                          
-                                        />
-                                        <input
-                                          type="text"
-                                          className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
-                                          value={paramData.default || ''}
-                                          placeholder={`Default value`}
-                                         
-                                        />
-                                        {func.generic_type_params && func.generic_type_params.length > 0 && (
-                                          <div className="mt-2">
-                                            <p className="mb-1 text-white">Select Token:</p>
-                                            <select
-                                              className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white"
-                                              
-                                            >
-                                              <option value="">Select a token</option>
-                                              {coinList.map((coin: any) => (
-                                                <option key={coin.address} value={coin.address}>
-                                                  {coin.symbol}
-                                                </option>
-                                              ))}
-                                            </select>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              ) : (
-                                <p>Please select a function {func.name} again</p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <p>Please select a method {func.name} again</p>
+                        )}
+                      </div>
                     )}
+                  </div>
+                  ))}
                 </div>
               </div>
+            )) : (
+              <p>Loading methods...</p>
             )}
             <CustomButton className="w-full md:w-auto" disabled={!isFormValid()} onClick={handleSubmit(onSubmit)}>
               <span className="font-semibold">Create</span>

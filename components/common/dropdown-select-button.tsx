@@ -25,7 +25,7 @@ const DropdownSelect: React.FC<IDropdownSelectProps> = ({ options, onSelect, ini
 
   useEffect(() => {
     if (initialValue) {
-      console.log(options);
+      //console.log(options);
       const selectedOption = options.find(option => option.value === initialValue);
 
       if (selectedOption) {

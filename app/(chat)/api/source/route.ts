@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const network = req.nextUrl.searchParams.get('network') || '';
 
   try {
-    if (network == 'near' && chain == 'mainnet') {
+    if (chain == 'near' && network == 'mainnet') {
       const provider = new providers.JsonRpcProvider({
         url: 'https://rpc.mainnet.near.org',
       });
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       const result = await contractTool({ mergeCode, account, methods });
       return NextResponse.json(JSON.parse(result), { status: 200 });
     }
-    if (network == 'eth' && chain == 'mainnet') {
+    if (chain == 'eth' && network == 'mainnet') {
       const response = await fetch(
         `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${account}&apikey=${process.env.ETH_SCAN_API}`
       );

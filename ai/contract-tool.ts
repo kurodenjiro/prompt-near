@@ -28,3 +28,21 @@ export async function contractTool({ sourceCode, account, methods }: any) {
   console.log(resultParse);
   return resultParse;
 }
+export async function contractSolidityTool({ sourceCode, account, methods }: any) {
+  console.log(methods);
+  const messages = [
+    new SystemMessage(`You are a solidity developer. 
+              When the user gives the source code and method. Provide your response as a JSON object with the following schema: , 
+           returns [{ account:  ${account}, method: ${methods}  , description : description with method 100 words limit , show args if it has : [ name: Argument name , type : data types ,description }} ] `),
+    new HumanMessage(
+      `Your response will not be in Markdown format, only JSON.Here is the source code : ${sourceCode} , method : ${methods}  `
+    ),
+  ];
+
+  const parser = new StringOutputParser();
+  const result = await model.invoke(messages);
+
+  const resultParse = await parser.invoke(result);
+  console.log(resultParse);
+  return resultParse;
+}

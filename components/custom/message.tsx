@@ -109,30 +109,30 @@ export const Message = ({
                   <div className="flex flex-col gap-4">
                     {toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } = toolInvocation;
-                      const [typeTool, typeFunction] = toolName.split("_")
+                      const [typeName, typeMethod, methods, chain, network] = toolName.split("o0")
 
                       if (state === 'result') {
                         const { result } = toolInvocation;
 
                         return (
                           <div key={toolCallId}>
-                            {typeTool == 'widgetTool' ? <ViewFrame code={result} /> :
-                              `Calling ${typeTool == 'contractTool' ? 'Contract' :
-                                typeTool == 'widgetTool' ? 'Widget' :
-                                  typeTool == 'apiTool' ? 'API Tool' :
+                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} /> : ""}
+
+                            {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
+                              `Calling ${typeName == 'contractTool' ? 'Contract' :
+                                typeName == 'widgetTool' ? 'Widget' :
+                                  typeName == 'apiTool' ? 'API Tool' :
                                     'unknow Tool'}
                                     ${toolCallId}`}
 
                           </div>
                         );
                       } else {
-                        const [typeName, typeMethod, methods, chain, network] = toolName.split("o0")
-                        console.log(toolName)
+
                         return (
                           <div key={toolCallId} className="skeleton">
                             Calling tool {toolCallId}
                             {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} /> : ""}
-
                           </div>
                         );
                       }

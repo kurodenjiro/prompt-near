@@ -13,10 +13,7 @@ export const SmartAction = ({ props: data, methods, network }: { props: any, met
 
     const [isAccountAddress, setIsAccountAddress] = useState(null);
 
-    const logout = async () => {
-        await signOut({ redirectTo: '/login' })
 
-    }
     useEffect(() => {
         if (accountId) {
             setIsAccountAddress(accountId as any)
@@ -63,7 +60,7 @@ export const SmartAction = ({ props: data, methods, network }: { props: any, met
                     <div
                         style={{ borderImageSource: `url("${ProfileBtnFrame.src}")` }}
                         className="flex w-full cursor-pointer items-center justify-center gap-1 px-11 py-1 uppercase [border-image-slice:13_fill] [border-image-width:15px] md:w-auto "
-                        onClick={logout}
+                        
                     >
                         <i className="ico-send-right-icon" /> Need auth
                     </div>

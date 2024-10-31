@@ -9,7 +9,9 @@ import { WidgetSelectionModal } from '@/components/custom/widget-selection-modal
 
 export default async function Page(props: { searchParams: Promise<any> }) {
   const session: any = await auth()
+  
   const user = session.user;
+
 
   return (
     <div className={'flex w-full grow items-center justify-center py-4'}>

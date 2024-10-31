@@ -67,35 +67,39 @@ export async function POST(request: Request) {
         )
       );
       const [account] = item.name.split('::');
-      tool[
-        item.typeName +
-          'o0' +
-          item.typeMethod +
-          'o0' +
-          item.methods +
-          'o0' +
-          item.chain +
-          'o0' +
-          item.network
-      ] = {
-        description: item.description,
-        parameters: z.object(ParametersSchema),
-        execute: async (ParametersData: ParametersData) => {
-          let data;
-          if (item.chain == 'near' && item.typeMethod == 'view') {
+      if (item.chain == 'near' && item.typeMethod == 'call') {
+        tool[
+          item.typeName +
+            'o0' +
+            item.typeMethod +
+            'o0' +
+            item.methods +
+            'o0' +
+            item.chain +
+            'o0' +
+            item.network
+        ] = {
+          description: item.description,
+          parameters: z.object(ParametersSchema),
+        };
+      }
+      if (item.chain == 'near' && item.typeMethod == 'view') {
+        tool[
+          item.typeName +
+            'o0' +
+            item.typeMethod +
+            'o0' +
+            item.methods +
+            'o0' +
+            item.chain +
+            'o0' +
+            item.network
+        ] = {
+          description: item.description,
+          parameters: z.object(ParametersSchema),
+          execute: async (ParametersData: ParametersData) => {
             const provider = new providers.JsonRpcProvider({
               url: `https://rpc.${item.network}.near.org`,
-            });
-            console.log(item.name);
-
-            console.log({
-              request_type: 'call_function',
-              account_id: account,
-              method_name: item.methods,
-              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
-                'base64'
-              ),
-              finality: 'final',
             });
             const res: any = await provider.query({
               request_type: 'call_function',
@@ -107,26 +111,10 @@ export async function POST(request: Request) {
               finality: 'final',
             });
             const data = JSON.parse(Buffer.from(res.result).toString());
-            console.log(data);
             return `data: ${JSON.stringify(data)}`;
-          }
-          if (item.chain == 'eth') {
-          }
-          if (item.chain == 'near' && item.typeMethod == 'call') {
-            const data = {
-              request_type: 'call_function',
-              account_id: account,
-              method_name: item.method,
-              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
-                'base64'
-              ),
-              finality: 'final',
-            };
-            return `data: ${JSON.stringify(data)}`;
-          }
-          return 'i dont userstand . pls explain';
-        },
-      };
+          },
+        };
+      }
       //if view return data
     }
     if (item.typeName == 'widgetTool') {

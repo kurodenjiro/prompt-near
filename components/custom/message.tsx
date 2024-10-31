@@ -110,24 +110,28 @@ export const Message = ({
                     {toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } = toolInvocation;
                       const [typeName, typeMethod, methods, chain, network] = toolName.split("o0")
-
+                      console.log(toolInvocation)
                       if (state === 'result') {
                         const { result } = toolInvocation;
 
                         return (
                           <div key={toolCallId}>
-                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} /> : ""}
+                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} receiverId={'birthday-quest.near'} /> : ""}
 
-                            {typeName == 'widgetTool' && <ViewFrame code={result} />}
-
+                            {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
+                              `Calling ${typeName == 'contractTool' ? 'Contract' :
+                                typeName == 'widgetTool' ? 'Widget' :
+                                  typeName == 'apiTool' ? 'API Tool' :
+                                    'unknow Tool'}
+                                    ${toolCallId}`}
                           </div>
                         );
                       } else {
 
                         return (
                           <div key={toolCallId} className="skeleton">
-                            Calling tool {toolCallId}
-                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} /> : ""}
+                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} receiverId={''} /> : ""}
+
                           </div>
                         );
                       }

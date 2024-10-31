@@ -46,7 +46,6 @@ export async function GET(req: NextRequest) {
       );
 
       const data = await response.json();
-      console.log(data);
       return NextResponse.json(data.contract[0].schema, { status: 200 });
     }
     if (chain == 'eth' && network == 'mainnet') {

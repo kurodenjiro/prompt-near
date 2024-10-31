@@ -13,6 +13,7 @@ import {
   jsonSchemaToZodSchema,
   getUrl,
 } from '@/components/utils/utils';
+import { providers } from 'near-api-js';
 
 type ParametersData = Record<string, any>; // Define the shape of ParametersData based on your requirements
 
@@ -65,13 +66,8 @@ export async function POST(request: Request) {
           ([key, value]) => value !== undefined
         )
       );
-      // tool[item.typeName + '_' + generateId()] = {
-      //   description: 'Get aptos address',
-      //   parameters: z.object({}),
-      //   execute: async () => {
-      //     return 'aptos address : 0x1::aptos_coin::AptosCoin';
-      //   },
-      // };
+      
+      console.log(item)
       console.log(item.typeName + '_' + item.type + '_' + item.network);
       tool[
         item.typeName +
@@ -85,28 +81,34 @@ export async function POST(request: Request) {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersData: ParametersData) => {
-          const filteredObj = Object.entries(ParametersData)
-            .filter(([key, value]) => key !== 'CoinType')
-            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-          const filteredObjCointype = Object.keys(ParametersData)
-            .filter((key) => key === 'CoinType')
-            .reduce((acc, key) => ({ ...acc, [key]: ParametersData[key] }), {});
-
-          const data: any = {
-            functionArguments: Object.values(filteredObj).map((item: any) =>
-              typeof item === 'number' ? BigInt(item * 10 ** 18) : item
-            ),
-            function: item.name,
-            typeArguments: Object.values(filteredObjCointype),
-          };
-          if (item.typeFunction == 'entry') {
+          console.log(ParametersData);
+          let data;
+          if (item.chain == 'near' && item.typeFunction == 'view') {
+            const provider = new providers.JsonRpcProvider({
+              url: `https://rpc.${item.network}.near.org`,
+            });
+            const res: any = await provider.query({
+              request_type: 'call_function',
+              account_id: 'v2-verifier.sourcescan.near',
+              method_name: 'get_contract',
+              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
+                'base64'
+              ),
+              finality: 'final',
+            });
+            const data = JSON.parse(Buffer.from(res.result).toString());
+            console.log(data);
+            return `data: ${JSON.stringify(data)}`;
+          }
+          if (item.chain == 'eth') {
+          }
+          if (item.typeFunction == 'call') {
             return `data: ${JSON.stringify(data)}`;
           }
           if (item.typeFunction == 'view') {
+            console.log('view');
             try {
-              const res = await aptosClient.view({ payload: data });
-              return `data: ${JSON.stringify(res)} `;
+              // return `data: ${JSON.stringify(res)} `;
             } catch (error) {
               console.log(error);
               return `data: ${JSON.stringify(error)} `;

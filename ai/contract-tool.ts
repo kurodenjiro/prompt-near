@@ -15,7 +15,7 @@ export async function contractTool({ sourceCode, account, methods }: any) {
   const messages = [
     new SystemMessage(`You are a rust developer. 
               When the user gives the source code and method. Provide your response as a JSON object with the following schema: , 
-           returns [{ account:  ${account}, method: ${methods}  , description : description with method 100 words limit , show args if it has : [ name: Argument name , type : data types ,description }} ] `),
+           returns [{ account:${account}, method: ${methods}  , description : description with method 100 words limit , show args if it has : [ name: Argument name , type : data types ,description }} ] `),
     new HumanMessage(
       `Your response will not be in Markdown format, only JSON.Here is the source code : ${sourceCode} , method : ${methods}  `
     ),

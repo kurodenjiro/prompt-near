@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
         finality: 'final',
       });
       const data = JSON.parse(Buffer.from(ipfs.result).toString());
-      console.log('data', data);
+
       const sourcePath = formatSourceCodePath(data.entry_point, data.lang);
 
       const baseUrl = 'https://api.sourcescan.dev/api/ipfs/structure';

@@ -2,11 +2,8 @@
 
 import { FC, useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import axios from 'axios';
 import classNames from 'classnames';
 import { Copy, LogOut, SettingsIcon } from 'lucide-react';
-import CustomButton from '@/components/custom/custom-button';
 
 import BoderImage from '@/components/common/border-image';
 
@@ -16,6 +13,7 @@ import ProfileElementDecor1 from '@/public/assets/svgs/profile-element-decor-1.s
 import DashboardAvatar from '@/components/custom/dashboard-avatar';
 import DashboardTopProfileDecor from '@/components/custom/dashboard-top-profile-decor';
 import { useToast } from '@/hooks/use-toast';
+import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 
 import {
   DropdownMenu,
@@ -23,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { getAptosBalance } from '@/components/utils/aptos-client';
 import { User } from '@/db/schema';
 
 type ProfileInforProps = {
@@ -34,11 +31,12 @@ type ProfileInforProps = {
 const ProfileInfor: FC<ProfileInforProps> = ({ className, user }) => {
   const [balance, setBalance] = useState<string | null>(null);
   const { toast } = useToast();
+  const { getBalance } = useWalletSelector();
 
   const loadBalance = useCallback(async () => {
     if (user) {
       try {
-        const balance = await getAptosBalance(user.username);
+        const balance = await getBalance(user.username);
         // console.log('balance', balance);
         setBalance(Number(balance).toFixed(2));
       } catch (error) {

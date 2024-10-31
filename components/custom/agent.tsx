@@ -17,7 +17,7 @@ import axios from 'axios';
 import { Textarea } from '@/components/ui/textarea';
 import useSWR, { mutate } from 'swr';
 import { fetcher } from '@/lib/utils';
-
+  
 type ChatTemplate = {
   title: string;
   description: string;
@@ -135,7 +135,7 @@ export function Agent({
     try {
       const userId = session?.user?.id;
       const agentData = {
-        avatar: avatar || '/assets/images/avatar/logo_aptos.png',
+        avatar: avatar || '/logo_near.jpg',
         name: data.name,
         description: data.description,
         intro: data.introMessage,
@@ -278,7 +278,7 @@ export function Agent({
             <div className="mb-4 flex flex-col gap-3">
               <label className="text-xs text-white lg:text-[18px]">Upload Avatar</label>
               <div onClick={() => document.getElementById('avatar-input')?.click()}>
-                <DashboardAvatar imageUrl={avatar || '/assets/images/avatar/logo_aptos.png'} />
+                <DashboardAvatar imageUrl={avatar || '/logo_near.jpg'} />
               </div>
               <input
                 type="file"

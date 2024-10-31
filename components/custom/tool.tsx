@@ -226,7 +226,7 @@ export function Tool({
 
       const toolData = {
         typeName: 'contractTool',
-        name: `${form.getValues('address')}::${form.getValues('network')[0]}::${funcName}`,
+        name: form.getValues('address'),
         description: sourceData[funcName].description || '',
         args: Object.entries(sourceData[funcName].args).map(([key, value]: [string, any])  => {
           return {
@@ -482,7 +482,7 @@ export function Tool({
                     imageBoder={WidgetFrame2.src} // Use your desired border image URL
                     className="flex flex-col items-start justify-between gap-2 rounded-lg border p-4 shadow-sm transition-shadow hover:shadow-md"
                   >
-                    <h2 className="text-lg font-semibold">{tool.name}</h2>
+                    <h2 className="text-lg font-semibold">{tool.name.length > 20 ? tool.name.slice(0, 20) + '...' : tool.name}</h2>
                     <span className="rounded text-xs text-gray-500">{tool.typeName || 'Widget'}</span>
                     <p className="text-sm text-white">{tool.description.slice(0, 70) + '...'}</p>
                   </BoderImage>
@@ -544,8 +544,8 @@ export function Tool({
               <div className="mb-4">
                 <p className="mb-2 text-xl text-white">Methods</p>
                 <div className="flex flex-col gap-3">
-                  {functions.map((func: any) => (
-                    <div key={func.name}>
+                  {functions.map((func: any,index:number) => (
+                    <div key={index}>
                     <label className="mb-2 flex items-center text-[#6B7280]">
                       <input
                         type="checkbox"
@@ -570,21 +570,30 @@ export function Tool({
                                   <textarea
                                     className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
                                     value={paramData.type}
+                                    onChange={(e) => {
+                                      // Handle change for type
+                                      paramData.type = e.target.value; // Update the state accordingly
+                                    }}
                                     rows={2}
-                                    
                                   />
                                   <textarea
                                     className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
                                     value={paramData.description}
+                                    onChange={(e) => {
+                                      // Handle change for description
+                                      paramData.description = e.target.value; // Update the state accordingly
+                                    }}
                                     rows={2}
-                                    
                                   />
                                   <input
                                     type="text"
                                     className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder:lowercase"
                                     value={paramData.default || ''}
                                     placeholder={`Default value`}
-                                   
+                                    onChange={(e) => {
+                                      // Handle change for default value
+                                      paramData.default = e.target.value; // Update the state accordingly
+                                    }}
                                   />
                                 </div>
                               )

@@ -49,8 +49,8 @@ export const DUMMY_WIDGET_LIST: Widget[] = [
       id: '3',
       index: 2,
       type: WIDGET_TYPES.IMAGE,
-      code: '/assets/background.jpg', 
-      description: 'Prompt Wallet',
+      code: '/assets/background-new.jpg', 
+      description: 'Onchain Agent',
       size: WIDGET_SIZE.LARGE,
       user_id: ''
     }

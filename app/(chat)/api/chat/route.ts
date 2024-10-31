@@ -72,7 +72,16 @@ export async function POST(request: Request) {
       //     return 'aptos address : 0x1::aptos_coin::AptosCoin';
       //   },
       // };
-      tool[item.typeName + '_' + item.typeFunction + '_' + item.network] = {
+      console.log(item.typeName + '_' + item.type + '_' + item.network);
+      tool[
+        item.typeName +
+          '_' +
+          item.typeMethod +
+          '_' +
+          item.chain +
+          '_' +
+          item.network
+      ] = {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersData: ParametersData) => {

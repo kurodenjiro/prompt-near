@@ -118,12 +118,7 @@ export const Message = ({
                           <div key={toolCallId}>
                             {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} /> : ""}
 
-                            {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
-                              `Calling ${typeName == 'contractTool' ? 'Contract' :
-                                typeName == 'widgetTool' ? 'Widget' :
-                                  typeName == 'apiTool' ? 'API Tool' :
-                                    'unknow Tool'}
-                                    ${toolCallId}`}
+                            {typeName == 'widgetTool' && <ViewFrame code={result} />}
 
                           </div>
                         );

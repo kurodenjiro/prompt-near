@@ -11,17 +11,10 @@ import { collapseAddress } from '@/components/utils/address';
 import ProfileElementDecor1 from '@/public/assets/svgs/profile-element-decor-1.svg';
 import DashboardAvatar from './dashboard-avatar';
 import DashboardTopProfileDecor from './dashboard-top-profile-decor';
-import {
-  APTOS_CONNECT_ACCOUNT_URL,
-  isAptosConnectWallet,
-  truncateAddress,
-  useWallet
-} from '@aptos-labs/wallet-adapter-react';
 import { signOut } from 'next-auth/react';
 import AugmentedPopup from '@/components/augmented/components/augmented-popup';
 import { Button } from '@/components/ui/button';
 import { getAptosClient } from '@/components/utils/aptos-client';
-import { InputGenerateTransactionPayloadData } from '@aptos-labs/ts-sdk';
 import { useToast } from '@/hooks/use-toast';
 import AptosReceiveModal from './aptos-receive-modal';
 import { useSearchParams } from 'next/navigation';
@@ -34,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getAptosBalance } from '@/components/utils/aptos-client';
 import { User } from '@/db/schema';
+import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 
 
 
@@ -46,15 +40,14 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
   const [isOpenReceive, setIsOpenReceive] = useState<boolean>(false);
   const [pending, setPending] = useState<boolean>(false);
   const { toast } = useToast();
-  const { account, signAndSubmitTransaction, wallet, disconnect } = useWallet();
-  const aptosClient = getAptosClient();
+  const { modal, accountId, selector } = useWalletSelector();
 
 
   const loadBalance = useCallback(async () => {
     try {
-      if (account?.address) {
-        setAccountAddress(account.address.toString())
-        const balance = await getAptosBalance(account?.address.toString());
+      if (accountId) {
+        setAccountAddress(accountId)
+        const balance = await getAptosBalance(accountId);
         setBalance(Number(balance).toFixed(2));
       }
       if (user) {
@@ -68,13 +61,13 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
     } catch (error) {
       console.error('Error loading balance:', error);
     }
-  }, [account, user]);
+  }, [accountId, user]);
 
   useEffect(() => {
-    if (account || user) {
+    if (accountId) {
       loadBalance();
     }
-  }, []);
+  }, [accountId]);
 
   const toggleOpenSend = () => {
     setIsOpenSend(!isOpenSend);
@@ -90,7 +83,7 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
 
   const onTransfer = async () => {
     setPending(true);
-    if (!account) return;
+    if (!accountId) return;
     if (parseFloat(amount as string) > parseFloat(balance || '0')) {
       toast({
         title: 'Not enough balance',

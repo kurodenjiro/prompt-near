@@ -1,6 +1,6 @@
 
 export const AgentDefault: any = {
-  avatar: '/assets/images/avatar/logo_aptos.png',
+  avatar: '/logo_near.jpg',
   name: 'Assistant',
   prompt:
     'you are a friendly assistant! keep your responses concise and helpful.',

@@ -1,6 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const maxDuration = 300;
 
+function convertDataToNearABI(input: any, account: string) {
+  return {
+    schema_version: '0.4.0',
+    metadata: {
+      name: account,
+      version: '0.1.0',
+      build: {
+        compiler: 'solc',
+        builder: 'custom-builder',
+      },
+    },
+    body: {
+      functions: input
+        .map((item: any) => {
+          if (item.type === 'constructor') {
+            return {
+              name: 'constructor',
+              kind: 'nonpayable',
+              params: {
+                serialization_type: 'json',
+                args: item.inputs.map((input: any) => ({
+                  name: input.name,
+                  type_schema: { type: input.type },
+                })),
+              },
+            };
+          } else if (item.type === 'event') {
+            return {
+              name: item.name,
+              kind: 'event',
+              params: {
+                serialization_type: 'json',
+                args: item.inputs.map((input: any) => ({
+                  name: input.name,
+                  type_schema: { type: input.type },
+                  indexed: input.indexed || false,
+                })),
+              },
+            };
+          }
+          return null;
+        })
+        .filter(Boolean),
+    },
+  };
+}
+
 export async function GET(req: NextRequest) {
   const account = req.nextUrl.searchParams.get('account') || '';
   const chain = req.nextUrl.searchParams.get('chain') || '';
@@ -13,6 +60,7 @@ export async function GET(req: NextRequest) {
       );
 
       const data = await response.json();
+      console.log(data);
       return NextResponse.json(data.contract[0].schema, { status: 200 });
     }
     if (chain == 'eth' && network == 'mainnet') {
@@ -21,9 +69,13 @@ export async function GET(req: NextRequest) {
       );
 
       const data = await response.json();
-      return NextResponse.json(JSON.parse(data.result), { status: 200 });
+      const nearABI = convertDataToNearABI(JSON.parse(data.result), account);
+      return NextResponse.json(nearABI, { status: 200 });
     }
-    return NextResponse.json({ error: 'Unsupported chain or network' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Unsupported chain or network' },
+      { status: 400 }
+    );
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }

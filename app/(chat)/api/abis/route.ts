@@ -8,7 +8,7 @@ function convertDataToNearABI(input: any, account: string) {
       name: account,
       version: '0.1.0',
       build: {
-        compiler: 'solc',
+        compiler: 'solidity',
         builder: 'custom-builder',
       },
     },

@@ -29,6 +29,13 @@
       "when": 1730109229930,
       "tag": "0003_colossal_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1730384132299,
+      "tag": "0004_fluffy_kabuki",
+      "breakpoints": true
     }
   ]
 }

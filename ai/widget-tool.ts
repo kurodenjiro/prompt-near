@@ -12,6 +12,7 @@ import {
   MessagesPlaceholder,
 } from '@langchain/core/prompts';
 import { getTools } from '@/db/queries';
+import { Item } from '@radix-ui/react-dropdown-menu';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -83,6 +84,7 @@ export async function widgetTool({ prompt }: any) {
   
   
   create label show balance of address abcxyz.near with data : 
+
   {
   "request_type": "call_function",
   "account_id": "v2-verifier.sourcescan.near",
@@ -95,7 +97,7 @@ export async function widgetTool({ prompt }: any) {
   (props)=>{
     const [data, setData] = props.useState("");
     const load = async () => {
-      const res = await props.near.query({
+      const res = await props.nearProvider.query({
       "request_type": "call_function",
       "account_id": "v2-verifier.sourcescan.near",
       "method_name": "search",
@@ -169,26 +171,26 @@ export async function widgetWithArgs({ prompt, args }: any) {
   Input:
   
   
-  Create a button send 0.1 aptos to 0x123456789
+  Create a button send 0.1 Near to abcxyz.near
   Output:
   
   
   (props) => {
   return (
-      <a href={'/chat?prompt="send 0.1 aptos to 0x123456789"&widgetId='+props.widgetId} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-          Send APTOS
+      <a href={'/chat?prompt="send 0.1 near to abcxyz.near"&widgetId='+props.widgetId} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+          Send Near
       </a>
       )
   }
   Example 2 – Action Button with Custom Text:
   Input:
   
-  Create an action button with label "Stake" and  Stake 0.1 APTOS  
+  Create an action button with label "Stake" and  Stake 0.1 Near  
   Output:
   
   (props) => {
   return (
-      <a href={'/chat?prompt=Stake 0.1 APTOS  &widgetId='+props.widgetId} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+      <a href={'/chat?prompt=Stake 0.1 Near  &widgetId='+props.widgetId} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
           Stake
       </a>
   )
@@ -197,27 +199,34 @@ export async function widgetWithArgs({ prompt, args }: any) {
   Input:
   
   
-  create label show balance of address 0x12314214 with data : [{"function":"0x0000000000000000000000000000000000000000000000000000000000000001::coin::balance","functionArguments":{"owner":"0x12314214"},"typeArguments":["0x1::aptos_coin::AptosCoin"],"return":['u64'] 
+  create label show balance of address abcxyz.near with data : 
+
+  {
+  "request_type": "call_function",
+  "account_id": "v2-verifier.sourcescan.near",
+  "method_name": "search",
+  "args_base64": Buffer.from(JSON.stringify('{"key":"A project","from_index":1,"limit":100}')).toString('base64'),
+  "finality": "optimistic"
+ }
   
   Output:
   (props)=>{
-    const [balance, setBalance] = props.useState("");
+    const [data, setData] = props.useState("");
     const load = async () => {
-      const [balance] = await props.aptos.view({
-        payload: {
-          function: "0x1::coin::balance",
-          functionArguments: [
-            "0x3deb6f4432df882e2ffd8250cd9642e74a19a1720a541014850c9ea1d92d67c1",
-          ],
-          typeArguments: ["0x1::aptos_coin::AptosCoin"],
-        },
-      });
-      setBalance(balance);
+      const res = await props.nearProvider.query({
+      "request_type": "call_function",
+      "account_id": "v2-verifier.sourcescan.near",
+      "method_name": "search",
+      "args_base64": Buffer.from(JSON.stringify('{"key":"A project","from_index":1,"limit":100}')).toString('base64'),
+      "finality": "optimistic"
+    });
+    
+      setData(JSON.parse(Buffer.from(res.result).toString()));
     };
     props.useEffect(() => {
       load();
     }, []);
-    return <p>Balance of 0x3deb6f4432df882e2ffd8250cd9642e74a19a1720a541014850c9ea1d92d67c1:{props.processData(balance)}</p>;
+    return <p>{props.processData(data)}</p>;
   }
 
   Example 4 – Compoment with JSON data:
@@ -274,7 +283,7 @@ export async function searchTool({ prompt, tool_ids }: any) {
   const dataTools: any = await getTools(tool_ids);
 
   const toolMap = dataTools.map((tool: any) => {
-    const ParametersSchema = Object.keys(tool.params).reduce(
+    const ParametersSchema = Object.keys(tool.args).reduce(
       (acc: any, key: any) => {
         acc[key] = key = zodExtract(
           tool.params[key].type,
@@ -320,15 +329,18 @@ export async function searchTool({ prompt, tool_ids }: any) {
       ' with data : ' +
       JSON.stringify(
         res.tool_calls.map((tool: any) => {
-          const dataTool = dataTools.find(
-            (item: any) => item._id.toString() === tool.name
-          );
+          const dataTool = dataTools.find((item: any) => item.id === tool.name);
+          const [account] = dataTool.name.split('::');
           const res = {
-            function: dataTool.tool.name,
-            functionArguments: tool.args,
-            typeArguments: dataTool.tool.generic_type_params,
-            return: dataTool.tool.return,
+            request_type: 'call_function',
+            account_id: account,
+            method_name: dataTool.methods,
+            args_base64: Buffer.from(
+              JSON.stringify(Array.isArray(dataTool.args) ? {} : dataTool.args)
+            ).toString('base64'),
+            finality: 'optimistic',
           };
+          console.log(res);
           return res;
         })
       )

@@ -43,13 +43,13 @@ export const ViewFrame = ({ code }: { code: string }) => {
   };
 
   const truncatedCode = truncateAddressesInCode(code);
-  const near = new providers.JsonRpcProvider({
-    url: `https://rpc.mannet.near.org`,
+  const nearProvider = new providers.JsonRpcProvider({
+    url: `https://rpc.mainnet.near.org`,
   });
   return (
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <StringToReactComponent data={{ useEffect, useState, processData, near }}>
+        <StringToReactComponent data={{ useEffect, useState, processData, nearProvider }}>
           {truncatedCode}
         </StringToReactComponent>
       </ErrorBoundary>
@@ -92,11 +92,14 @@ export const ViewFrameDashboard = ({ code, id }: { code: string; id: string }) =
   };
 
   const truncatedCode = truncateAddressesInCode(code);
-
+  const nearProvider = new providers.JsonRpcProvider({
+    url: `https://rpc.mainnet.near.org`,
+  });
   return (
+    
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <StringToReactComponent data={{ useEffect, useState, processData, widgetId: id }}>
+        <StringToReactComponent data={{ useEffect, useState, processData, nearProvider, widgetId: id }}>
           {truncatedCode}
         </StringToReactComponent>
       </ErrorBoundary>

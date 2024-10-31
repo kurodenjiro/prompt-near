@@ -41,29 +41,29 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
       description: 'This is a staking agent.',
       intro: 'Hello! I am your staking agent.',
       tool: [toolIds, widgetIds],
-      prompt: `create button action stake 0.1 aptos to ${user?.id}`,
+      prompt: `create button action stake 0.1 Near to ${user?.username}`,
       userId: user?.id,
-      avatar: '/assets/images/avatar/logo_aptos.png',
+      avatar: '/assets/images/avatar/logo_near.jpg',
       suggestedActions: [
         {
           title: 'Stake APT',
           description: 'Stake 0.1 APT',
-          content: `create button action stake 0.1 aptos to ${user?.id}`
+          content: `create button action stake 0.1 aptos to ${user?.username}`
         },
         {
           title: 'Transfer APT',
           description: 'Send 0.1 APT to 0x1',
-          content: `create button action transfer 0.1 aptos to 0x1`
+          content: `create button action transfer 0.1 Near to user?.username`
         },
         {
           title: 'View Balance',
           description: 'View my balance.',
-          content: `create label view balance for ${user?.id}`
+          content: `create label view balance for ${user?.username}`
         },
         {
           title: 'View Transactions',
           description: 'View my transaction history.',
-          content: `create label view total transactions for ${user?.id}`
+          content: `create label view total transactions for ${user?.username}`
         }
       ],
       createdAt: Date.now(),

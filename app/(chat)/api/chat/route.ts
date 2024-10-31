@@ -5,6 +5,7 @@ import { auth } from '@/app/(auth)/auth';
 import { deleteChatById, getChatById, saveChat } from '@/db/queries';
 import { Agent } from '@/db/schema';
 import { widgetWithArgs } from '@/ai/widget-tool';
+import { Web3 } from 'web3';
 
 import { Model, models } from '@/lib/model';
 import {
@@ -70,43 +71,74 @@ export async function POST(request: Request) {
       console.log(
         `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}`
       );
+      console.log(item.chain, item.typeMethod);
       tool[
         `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}`
       ] = {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersData: ParametersData) => {
-          let data;
           if (item.chain == 'near' && item.typeMethod == 'view') {
-            const provider = new providers.JsonRpcProvider({
-              url: `https://rpc.${item.network}.near.org`,
-            });
+            try {
+              const provider = new providers.JsonRpcProvider({
+                url: `https://rpc.${item.network}.near.org`,
+              });
+              const res: any = await provider.query({
+                request_type: 'call_function',
+                account_id: account,
+                method_name: item.methods,
+                args_base64: Buffer.from(
+                  JSON.stringify(ParametersData)
+                ).toString('base64'),
+                finality: 'final',
+              });
+              const data = JSON.parse(Buffer.from(res.result).toString());
 
-            const res: any = await provider.query({
-              request_type: 'call_function',
-              account_id: account,
-              method_name: item.method,
-              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
-                'base64'
-              ),
-              finality: 'final',
-            });
-            const data = JSON.parse(Buffer.from(res.result).toString());
-            return `data: ${JSON.stringify(data)}`;
+              let convertString;
+              if (typeof data == 'object') {
+                convertString = JSON.stringify(data);
+              } else {
+                convertString = data;
+              }
+              return `data : ${convertString}`;
+            } catch (error) {
+              console.log(error);
+              return `Error calling contract method:${error}`;
+            }
           }
-          if (item.chain == 'eth') {
-          }
+
           if (item.chain == 'near' && item.typeMethod == 'call') {
             const data = {
               request_type: 'call_function',
               account_id: account,
-              method_name: item.method,
+              method_name: item.methods,
               args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
                 'base64'
               ),
               finality: 'final',
             };
             return `data: ${JSON.stringify(data)}`;
+          }
+          if (item.chain == 'eth' && item.typeMethod == 'view') {
+            try {
+              const web3 = new Web3('https://1rpc.io/eth');
+              const response = await fetch(
+                `https://api.etherscan.io/api?module=contract&action=getabi&address=${account}&apikey=${process.env.ETH_SCAN_API}`
+              );
+              const data = await response.json();
+              const abi = JSON.parse(data.result);
+              const contract = new web3.eth.Contract(abi, account);
+              const result = await contract.methods[item.methods]().call();
+              let convertString;
+              if (typeof result == 'object') {
+                convertString = JSON.stringify(result);
+              } else {
+                convertString = result;
+              }
+              return `data: ${convertString}`;
+            } catch (error) {
+              return `Error calling contract method:${error}`;
+            }
           }
           return 'i dont userstand . pls explain';
         },

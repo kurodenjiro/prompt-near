@@ -117,7 +117,9 @@ export const Message = ({
                           <div key={toolCallId}>
                             {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
                               typeName == 'cTcn' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
-                                `Calling ${typeName == 'cT' ? 'Contract' :
+                              typeName == 'cTvn0' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
+
+                                `Calling ${typeName == 'cTvn' ? 'ETH Contract' :
                                   typeName == 'widgetTool' ? 'Widget' :
                                     typeName == 'apiTool' ? 'API Tool' :
                                       'unknow Tool'}

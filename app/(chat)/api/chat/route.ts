@@ -93,7 +93,7 @@ export async function POST(request: Request) {
             'o0' +
             item.chain +
             'o0' +
-            item.network
+            account
         ] = {
           description: item.description,
           parameters: z.object(ParametersSchema),

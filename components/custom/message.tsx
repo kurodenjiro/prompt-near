@@ -109,7 +109,7 @@ export const Message = ({
                   <div className="flex flex-col gap-4">
                     {toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } = toolInvocation;
-                      const [typeName, typeMethod, methods, chain, network] = toolName.split("o0")
+                      const [typeName, typeMethod, methods, chain, account] = toolName.split("o0")
                       console.log(toolInvocation)
                       if (state === 'result') {
                         const { result } = toolInvocation;
@@ -130,7 +130,7 @@ export const Message = ({
 
                         return (
                           <div key={toolCallId} className="skeleton">
-                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} receiverId={'birthday-quest.near'} /> : ""}
+                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods}  receiverId={account} /> : ""}
 
                           </div>
                         );

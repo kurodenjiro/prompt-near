@@ -66,30 +66,40 @@ export async function POST(request: Request) {
           ([key, value]) => value !== undefined
         )
       );
-
-      console.log(item);
-      console.log(item.typeName + '_' + item.type + '_' + item.network);
+      const [account] = item.name.split('::');
       tool[
         item.typeName +
-          '_' +
+          'o0' +
           item.typeMethod +
-          '_' +
+          'o0' +
+          item.methods +
+          'o0' +
           item.chain +
-          '_' +
+          'o0' +
           item.network
       ] = {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersData: ParametersData) => {
-          console.log(ParametersData);
           let data;
-          if (item.chain == 'near' && item.typeFunction == 'view') {
+          if (item.chain == 'near' && item.typeMethod == 'view') {
             const provider = new providers.JsonRpcProvider({
               url: `https://rpc.${item.network}.near.org`,
             });
+            console.log(item.name);
+
+            console.log({
+              request_type: 'call_function',
+              account_id: account,
+              method_name: item.methods,
+              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
+                'base64'
+              ),
+              finality: 'final',
+            });
             const res: any = await provider.query({
               request_type: 'call_function',
-              account_id: item.name,
+              account_id: account,
               method_name: item.method,
               args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
                 'base64'
@@ -102,21 +112,19 @@ export async function POST(request: Request) {
           }
           if (item.chain == 'eth') {
           }
-          if (item.typeFunction == 'call') {
+          if (item.chain == 'near' && item.typeMethod == 'call') {
+            const data = {
+              request_type: 'call_function',
+              account_id: account,
+              method_name: item.method,
+              args_base64: Buffer.from(JSON.stringify(ParametersData)).toString(
+                'base64'
+              ),
+              finality: 'final',
+            };
             return `data: ${JSON.stringify(data)}`;
           }
-          if (item.typeFunction == 'view') {
-            console.log('view');
-            try {
-              // return `data: ${JSON.stringify(res)} `;
-            } catch (error) {
-              console.log(error);
-              return `data: ${JSON.stringify(error)} `;
-            }
-
-            // should use text generation
-          }
-          return 'dont know';
+          return 'i dont userstand . pls explain';
         },
       };
       //if view return data

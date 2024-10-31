@@ -6,26 +6,11 @@ import React, { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 
-export const SmartAction = ({ props: data, functionName }: { props: any, functionName: string }) => {
+export const SmartAction = ({ props: data, methods, network }: { props: any, methods: string, network: string }) => {
 
-    const { modal, accountId, selector } = useWalletSelector();
+    const { accountId, selector } = useWalletSelector();
 
-    const filteredObj = Object.entries(data)
-        .filter(([key, value]) => key !== 'CoinType')
-        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
-    const filteredObjCointype = Object.keys(data)
-        .filter((key) => key === 'CoinType')
-        .reduce((acc, key) => ({ ...acc, [key]: data[key] }), {});
-
-    const params: any = {
-        functionArguments: Object.values(filteredObj).map((item: any) =>
-            typeof item === 'number' ? BigInt(item * 10 ** 18) : item
-        ),
-        function: functionName.replaceAll('o0', '::'),
-        typeArguments: Object.values(filteredObjCointype),
-    }
-    console.log(params);
     const [isAccountAddress, setIsAccountAddress] = useState(null);
 
     const logout = async () => {
@@ -38,16 +23,15 @@ export const SmartAction = ({ props: data, functionName }: { props: any, functio
         }
     }, [accountId])
     const onTransfer = async () => {
-        console.log(accountId)
         try {
-            const wallet = await selector.wallet("my-near-wallet");
+            const wallet = await selector.wallet();
             await wallet.signAndSendTransaction({
                 actions: [
                     {
                         type: "FunctionCall",
                         params: {
-                            methodName: "addMessage",
-                            args: { text: "Hello World!" },
+                            methodName: methods,
+                            args: data,
                             gas: "30000000000000",
                             deposit: "10000000000000000000000",
                         },

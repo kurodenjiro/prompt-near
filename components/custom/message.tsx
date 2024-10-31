@@ -126,12 +126,12 @@ export const Message = ({
                           </div>
                         );
                       } else {
-                        const [typeTool, typeFunction, typeAddress, functionName] = toolName.split("_")
+                        const [typeName, typeMethod, methods, chain, network] = toolName.split("o0")
                         console.log(toolName)
                         return (
                           <div key={toolCallId} className="skeleton">
                             Calling tool {toolCallId}
-                            {typeTool == 'contractTool' && typeFunction == 'entry' ? <SmartAction props={args} functionName={functionName} /> : ""}
+                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} /> : ""}
 
                           </div>
                         );

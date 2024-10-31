@@ -6,48 +6,30 @@ import React, { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 
-export const SmartAction = ({ props: data, functionName }: { props: any, functionName: string }) => {
+export const SmartAction = ({ props: data, methods, receiverId }: { props: any, methods: string, receiverId: string }) => {
 
-    const { modal, accountId, selector } = useWalletSelector();
-
-    const filteredObj = Object.entries(data)
-        .filter(([key, value]) => key !== 'CoinType')
-        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-    const filteredObjCointype = Object.keys(data)
-        .filter((key) => key === 'CoinType')
-        .reduce((acc, key) => ({ ...acc, [key]: data[key] }), {});
-
-    const params: any = {
-        functionArguments: Object.values(filteredObj).map((item: any) =>
-            typeof item === 'number' ? BigInt(item * 10 ** 18) : item
-        ),
-        function: functionName.replaceAll('o0', '::'),
-        typeArguments: Object.values(filteredObjCointype),
-    }
-    console.log(params);
+    const { accountId, selector, modal } = useWalletSelector();
     const [isAccountAddress, setIsAccountAddress] = useState(null);
 
-    const logout = async () => {
-        await signOut({ redirectTo: '/login' })
-
-    }
     useEffect(() => {
         if (accountId) {
+            console.log(accountId)
             setIsAccountAddress(accountId as any)
         }
     }, [accountId])
+
     const onTransfer = async () => {
-        console.log(accountId)
         try {
-            const wallet = await selector.wallet("my-near-wallet");
+            const wallet = await selector.wallet();
             await wallet.signAndSendTransaction({
+                signerId: accountId!,
+                receiverId,
                 actions: [
                     {
                         type: "FunctionCall",
                         params: {
-                            methodName: "addMessage",
-                            args: { text: "Hello World!" },
+                            methodName: methods,
+                            args: data,
                             gas: "30000000000000",
                             deposit: "10000000000000000000000",
                         },
@@ -79,9 +61,9 @@ export const SmartAction = ({ props: data, functionName }: { props: any, functio
                     <div
                         style={{ borderImageSource: `url("${ProfileBtnFrame.src}")` }}
                         className="flex w-full cursor-pointer items-center justify-center gap-1 px-11 py-1 uppercase [border-image-slice:13_fill] [border-image-width:15px] md:w-auto "
-                        onClick={logout}
+                        onClick={modal.show}
                     >
-                        <i className="ico-send-right-icon" /> Need auth
+                        <i className="ico-send-right-icon" /> Login to excute
                     </div>
                 )}
 

@@ -109,29 +109,28 @@ export const Message = ({
                   <div className="flex flex-col gap-4">
                     {toolInvocations.map((toolInvocation) => {
                       const { toolName, toolCallId, state, args } = toolInvocation;
-                      const [typeTool, typeFunction] = toolName.split("_")
-
                       if (state === 'result') {
                         const { result } = toolInvocation;
-
+                        const [typeName, methods, account] = toolName.split('0-')
+                        console.log(typeName, methods, account)
                         return (
                           <div key={toolCallId}>
-                            {typeTool == 'widgetTool' ? <ViewFrame code={result} /> :
-                              `Calling ${typeTool == 'contractTool' ? 'Contract' :
-                                typeTool == 'widgetTool' ? 'Widget' :
-                                  typeTool == 'apiTool' ? 'API Tool' :
-                                    'unknow Tool'}
-                                    ${toolCallId}`}
+                            {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
+                              typeName == 'cTcn' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
+                              typeName == 'cTvn0' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
 
+                                `Calling ${typeName == 'cTvn' ? 'ETH Contract' :
+                                  typeName == 'widgetTool' ? 'Widget' :
+                                    typeName == 'apiTool' ? 'API Tool' :
+                                      'unknow Tool'}
+                                    ${toolCallId}`}
                           </div>
                         );
                       } else {
-                        const [typeTool, typeFunction, typeAddress, functionName] = toolName.split("_")
-                        console.log(toolName)
+                        const [typeName, typeMethod, chain, methods, account] = toolName.split("_")
                         return (
                           <div key={toolCallId} className="skeleton">
-                            Calling tool {toolCallId}
-                            {typeTool == 'contractTool' && typeFunction == 'entry' ? <SmartAction props={args} functionName={functionName} /> : ""}
+                            {typeName == 'cT' && typeMethod == 'c' && chain == 'n' ? <SmartAction props={args} methods={methods} receiverId={account} /> : ""}
 
                           </div>
                         );

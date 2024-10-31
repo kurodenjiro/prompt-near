@@ -28,19 +28,22 @@ export function WalletSelector() {
   const { pending } = useFormStatus()
 
   useEffect(() => {
-    if (state.status === "failed") {
-      toast({
-        title: 'Invalid credentials!',
-        description: ''
-      });
-    } else if (state.status === "invalid_data") {
-      toast({
-        title: 'Failed validating your submission!',
-        description: ''
-      });
-    } else if (state.status === "success") {
-      router.refresh();
+    if (state) {
+      if (state.status === "failed") {
+        toast({
+          title: 'Invalid credentials!',
+          description: ''
+        });
+      } else if (state.status === "invalid_data") {
+        toast({
+          title: 'Failed validating your submission!',
+          description: ''
+        });
+      } else if (state.status === "success") {
+        router.refresh();
+      }
     }
+
   }, [state, router, toast]);
 
 

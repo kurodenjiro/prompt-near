@@ -3,8 +3,12 @@
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import StringToReactComponent from 'string-to-react-component';
+import { providers } from 'near-api-js';
 
 export const ViewFrame = ({ code }: { code: string }) => {
+
+
+
   const truncateAddress = (address: string, startLength: number = 6, endLength: number = 4) => {
     if (address.length <= startLength + endLength) return address;
 
@@ -39,11 +43,13 @@ export const ViewFrame = ({ code }: { code: string }) => {
   };
 
   const truncatedCode = truncateAddressesInCode(code);
-
+  const nearProvider = new providers.JsonRpcProvider({
+    url: `https://rpc.mainnet.near.org`,
+  });
   return (
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <StringToReactComponent data={{ useEffect, useState, processData }}>
+        <StringToReactComponent data={{ useEffect, useState, processData, nearProvider }}>
           {truncatedCode}
         </StringToReactComponent>
       </ErrorBoundary>
@@ -86,11 +92,14 @@ export const ViewFrameDashboard = ({ code, id }: { code: string; id: string }) =
   };
 
   const truncatedCode = truncateAddressesInCode(code);
-
+  const nearProvider = new providers.JsonRpcProvider({
+    url: `https://rpc.mainnet.near.org`,
+  });
   return (
+    
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <StringToReactComponent data={{ useEffect, useState, processData, widgetId: id }}>
+        <StringToReactComponent data={{ useEffect, useState, processData, nearProvider, widgetId: id }}>
           {truncatedCode}
         </StringToReactComponent>
       </ErrorBoundary>

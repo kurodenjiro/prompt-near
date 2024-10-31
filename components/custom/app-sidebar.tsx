@@ -47,7 +47,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
             </SidebarMenuButton>
             <BetterTooltip content="New Chat">
               <SidebarMenuAction asChild>
-                <Link href="/" onClick={() => setOpenMobile(false)}>
+                <Link href="/chat" onClick={() => setOpenMobile(false)}>
                   <Plus />
                 </Link>
               </SidebarMenuAction>

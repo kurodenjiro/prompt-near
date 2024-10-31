@@ -5,10 +5,12 @@ export async function GET(req: NextRequest) {
   const account = req.nextUrl.searchParams.get('account') || '';
 
   try {
-    const response = await fetch(`https://api.mainnet.aptoslabs.com/v1/accounts/${account}/modules?limit=1000`);
+    const response = await fetch(
+      `https://api.nearblocks.io/v1/account/${account}/contract/parse`
+    );
+
     const data = await response.json();
-    const res = await data.map((data: any) => data.abi);
-    return NextResponse.json(res, { status: 200 });
+    return NextResponse.json(data.contract[0].schema, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }

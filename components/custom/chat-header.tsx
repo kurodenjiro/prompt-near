@@ -21,7 +21,7 @@ export function ChatHeader({
           className="w-auto md:size-8 [&>svg]:!size-5 md:[&>svg]:!size-4 pl-2 md:p-0 order-2 md:order-1 ml-auto md:ml-0 md:hidden group-data-[state=collapsed]/sidebar-wrapper:flex"
           asChild
         >
-          <Link href="/">
+          <Link href="/chat">
             <Plus />
             <span className="md:sr-only">New Chat</span>
           </Link>

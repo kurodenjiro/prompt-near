@@ -5,11 +5,7 @@ import { useRouter } from "next/navigation";
 import { WalletSelector } from '@/components/context/wallet-selector';
 import LoginBg from '@/public/assets/images/modal-login-frame.png';
 
-import { login, LoginActionState } from "../actions";
 export default function Page() {
-  const router = useRouter();
-
-
 
   return (
     <div className="flex grow items-center justify-center">

@@ -119,7 +119,7 @@ export const Message = ({
                               typeName == 'cTcn' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
                               typeName == 'cTvn0' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
 
-                                `Calling ${typeName == 'cTvn' ? 'ETH Contract' :
+                                `Calling ${typeName == 'cTvn' ? 'Contract' :
                                   typeName == 'widgetTool' ? 'Widget' :
                                     typeName == 'apiTool' ? 'API Tool' :
                                       'unknow Tool'}

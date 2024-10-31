@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     });
     const ipfs: any = await provider.query({
       request_type: 'call_function',
-      account_id: 'dev.sourcescan.near',
+      account_id: 'v2-verifier.sourcescan.near',
       method_name: 'get_contract',
       args_base64: Buffer.from(
         JSON.stringify({ account_id: account })
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     const data = JSON.parse(Buffer.from(ipfs.result).toString());
     const sourcePath = formatSourceCodePath(data.entry_point, data.lang);
 
-    const baseUrl = 'https://api.sourcescan.dev/api/ipfs/structure';
+    const baseUrl = "https://api.sourcescan.dev/api/ipfs/structure";
     const params = new URLSearchParams({
       cid: data.cid,
       path: sourcePath,

@@ -1,16 +1,14 @@
 'use client';
 
-import { Account } from '@aptos-labs/ts-sdk';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-
-import { getAptosClient } from '@/components/utils/utils';
 
 import ProfileBtnFrame from '@/public/assets/svgs/profile-btn-frame.svg';
 import React, { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
+import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 
 export const SmartAction = ({ props: data, functionName }: { props: any, functionName: string }) => {
 
+    const { modal, accountId, selector } = useWalletSelector();
 
     const filteredObj = Object.entries(data)
         .filter(([key, value]) => key !== 'CoinType')
@@ -28,7 +26,6 @@ export const SmartAction = ({ props: data, functionName }: { props: any, functio
         typeArguments: Object.values(filteredObjCointype),
     }
     console.log(params);
-    const { account } = useWallet();
     const [isAccountAddress, setIsAccountAddress] = useState(null);
 
     const logout = async () => {
@@ -36,28 +33,27 @@ export const SmartAction = ({ props: data, functionName }: { props: any, functio
 
     }
     useEffect(() => {
-        if (account) {
-            setIsAccountAddress(account?.address.toString() as any)
+        if (accountId) {
+            setIsAccountAddress(accountId as any)
         }
-    }, [account])
+    }, [accountId])
     const onTransfer = async () => {
-        const aptosClient = getAptosClient();
-        console.log(account?.address.toString())
+        console.log(accountId)
         try {
-            const txn = await aptosClient.transaction.build.simple({
-                sender: account?.address.toString() as any,
-                data: params
+            const wallet = await selector.wallet("my-near-wallet");
+            await wallet.signAndSendTransaction({
+                actions: [
+                    {
+                        type: "FunctionCall",
+                        params: {
+                            methodName: "addMessage",
+                            args: { text: "Hello World!" },
+                            gas: "30000000000000",
+                            deposit: "10000000000000000000000",
+                        },
+                    },
+                ],
             });
-
-            console.log(txn);
-            console.log('\n=== Transfer transaction ===\n');
-            const committedTxn = await aptosClient.signAndSubmitTransaction({
-                signer: account as unknown as Account,
-                transaction: txn
-            });
-
-            await aptosClient.waitForTransaction({ transactionHash: committedTxn.hash });
-            console.log(`Committed transaction: ${committedTxn.hash}`);
         } catch (err) {
             console.error('Error', err);
         }

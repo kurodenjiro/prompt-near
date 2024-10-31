@@ -188,7 +188,6 @@ interface ApiRequestOptions {
 }
 
 export const convertParamsToZod = (params: any) => {
-  console.log(params);
   return Object.keys(params).reduce((acc: any, key: any) => {
     acc[key] = key = zodExtract(params[key].type, params[key].description);
     return acc;

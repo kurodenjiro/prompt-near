@@ -1,6 +1,5 @@
 import { convertToCoreMessages, Message, streamText, generateId } from 'ai';
 import { z, ZodObject } from 'zod';
-import { getAptosClient } from '@/components/utils/utils';
 import { customModel } from '@/ai';
 import { auth } from '@/app/(auth)/auth';
 import { deleteChatById, getChatById, saveChat } from '@/db/queries';
@@ -40,7 +39,6 @@ export async function POST(request: Request) {
     agent: Agent;
     tools: Tool[];
   } = await request.json();
-  const aptosClient = getAptosClient();
 
   const session = await auth();
 
@@ -51,11 +49,17 @@ export async function POST(request: Request) {
   if (!models.find((m) => m.name === model)) {
     return new Response('Model not found', { status: 404 });
   }
-  console.log("tools",tools);
 
   const toolData = tools.reduce((tool: any, item: any) => {
     if (item.typeName == 'contractTool') {
-      const filteredObj: any = convertParamsToZod(item.params);
+      const params = item.args.reduce(
+        (acc: any, { name, type, description }: any) => {
+          acc[name] = { type, description };
+          return acc;
+        },
+        {}
+      );
+      const filteredObj: any = convertParamsToZod(params);
       const ParametersSchema: any = Object.fromEntries(
         Object.entries(filteredObj).filter(
           ([key, value]) => value !== undefined
@@ -68,13 +72,7 @@ export async function POST(request: Request) {
       //     return 'aptos address : 0x1::aptos_coin::AptosCoin';
       //   },
       // };
-      tool[
-        item.typeName +
-          '_' +
-          item.typeFunction +
-          '_' +
-          item.name.replaceAll('::', 'o0')
-      ] = {
+      tool[item.typeName + '_' + item.typeFunction + '_' + item.network] = {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersData: ParametersData) => {
@@ -121,7 +119,7 @@ export async function POST(request: Request) {
           ([key, value]) => value !== undefined
         )
       );
-      
+
       tool[item.typeName + '_' + item.typeFunction + '_' + generateId()] = {
         description: item.description,
         parameters: z.object(ParametersSchema),

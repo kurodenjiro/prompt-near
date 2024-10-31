@@ -1,16 +1,11 @@
 export const CHAIN_LIST = [
     {
-        chainId: "Ethereum",
+        chainId: "eth",
         network: ["mainnet", "sepolia"],
         symbol: "ETH",
     },
     {
-        chainId: "Aurora",
-        network: ["mainnet", "testnet"],
-        symbol: "ETH",
-    },
-    {
-        chainId: "Near",
+        chainId: "near",
         network: ["mainnet", "testnet"],
         symbol: "NEAR",
     },

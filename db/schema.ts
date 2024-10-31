@@ -36,13 +36,14 @@ export const tool = pgTable('Tool', {
   typeName: varchar('typeName', { length: 64 }).notNull(),
   description: text('description'),
   //Tool Contract
-  params: json('params'),
-  type_params: json('type_params'),
-  functions: varchar('functions', { length: 256 }),
-  typeFunction: varchar('typeFunction', { length: 64 }),
+  args: json('args'),
+  typeMethod: varchar('typeMethod', { length: 64 }),
+  methods: varchar('methods', { length: 256 }),
   // Tool API
   accessToken: text('accessToken'),
   spec: json('spec'),
+  network: varchar('network', { length: 64 }),
+  chain: varchar('chain', { length: 64 }),
   // Tool Widget
   prompt: text('prompt'),
   code: text('code'),

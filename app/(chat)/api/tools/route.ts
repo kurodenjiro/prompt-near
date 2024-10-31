@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { typeName, name, description, userId, id, params, ...otherProps } = body;
+    const { typeName, name, description, userId, id, args, chain, network, ...otherProps } = body;
 
     if (!typeName || !name || !description || !userId) {
       return NextResponse.json(
@@ -49,10 +49,11 @@ export async function POST(request: NextRequest) {
       userId,
       typeName,
       createdAt: new Date(),
-      params: null,
-      type_params: null,
-      functions: null,
-      typeFunction: null,
+      args,
+      typeMethod: null,
+      methods: null,
+      network,
+      chain,
       accessToken: null,
       spec: null,
       prompt: null,
@@ -77,8 +78,8 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'contractTool':
-        const { typeFunction, functions, type_params } = otherProps;
-        if (!params || !typeFunction || !functions) {
+        const { typeMethod, methods } = otherProps;
+        if (!args || !typeMethod || !methods) {
           return NextResponse.json(
             { error: 'Missing required fields for Contract tool' },
             { status: 400 }
@@ -86,10 +87,11 @@ export async function POST(request: NextRequest) {
         }
         result = await createContractTool({
           ...commonProps,
-          params,
-          typeFunction,
-          functions,
-          type_params,
+          args,
+          typeMethod,
+          methods,
+          chain,
+          network,
         } as Tool);
         break;
 
@@ -104,7 +106,7 @@ export async function POST(request: NextRequest) {
         result = await createWidgetTool({
           ...commonProps,
           prompt,
-          params,
+          args,
           code: JSON.stringify(code),
           toolWidget,
         } as Tool);

@@ -10,6 +10,7 @@ import { user, chat, User, agent, Agent, tool, Tool } from './schema';
 // Optionally, if not using username/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
+
 let client = postgres(process.env.POSTGRES_URL!);
 let db = drizzle(client);
 
@@ -214,16 +215,19 @@ export async function createApiTool({
     throw error;
   }
 }
+
 export async function createContractTool({
   id,
   name,
   description,
   typeName,
-  params,
-  typeFunction,
-  functions,
-  type_params,
+  args,
+  typeMethod,
+  methods,
   userId,
+  chain,
+  network,
+  createdAt
 }: Tool) {
   try {
     return await db.insert(tool).values({
@@ -231,17 +235,20 @@ export async function createContractTool({
       name,
       description,
       typeName,
-      params,
-      typeFunction,
-      functions,
-      type_params,
+      args,
+      typeMethod,
+      methods,
       userId,
+      chain,
+      network,
+      createdAt
     });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
   }
 }
+
 export async function createWidgetTool({
   id,
   name,
@@ -251,7 +258,7 @@ export async function createWidgetTool({
   code,
   toolWidget,
   userId,
-  params
+  args
 }: Tool) {
   try {
     return await db.insert(tool).values({
@@ -263,7 +270,7 @@ export async function createWidgetTool({
       code,
       toolWidget,
       userId,
-      params
+      args
     });
   } catch (error) {
     console.error('Failed to create user in database');

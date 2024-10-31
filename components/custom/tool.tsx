@@ -226,7 +226,7 @@ export function Tool({
 
       const toolData = {
         typeName: 'contractTool',
-        name: form.getValues('address'),
+        name: `${form.getValues('address')}::${form.getValues('network')[0]}::${funcName}`,
         description: sourceData[funcName].description || '',
         args: Object.entries(sourceData[funcName].args).map(([key, value]: [string, any])  => {
           return {

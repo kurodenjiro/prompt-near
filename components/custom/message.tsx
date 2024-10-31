@@ -130,7 +130,7 @@ export const Message = ({
 
                         return (
                           <div key={toolCallId} className="skeleton">
-                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} receiverId={''} /> : ""}
+                            {typeName == 'contractTool' && typeMethod == 'call' && chain == 'near' ? <SmartAction props={args} methods={methods} network={network} receiverId={'birthday-quest.near'} /> : ""}
 
                           </div>
                         );

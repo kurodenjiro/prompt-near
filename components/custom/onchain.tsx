@@ -9,10 +9,7 @@ import { useWalletSelector } from "@/components/context/wallet-selector-provider
 export const SmartAction = ({ props: data, methods, network, receiverId }: { props: any, methods: string, network: string, receiverId: string }) => {
 
     const { accountId, selector } = useWalletSelector();
-
-
     const [isAccountAddress, setIsAccountAddress] = useState(null);
-
 
     useEffect(() => {
         if (accountId) {
@@ -20,6 +17,7 @@ export const SmartAction = ({ props: data, methods, network, receiverId }: { pro
             setIsAccountAddress(accountId as any)
         }
     }, [accountId])
+    
     const onTransfer = async () => {
         try {
             const wallet = await selector.wallet();

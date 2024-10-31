@@ -72,7 +72,7 @@ export const WalletSelectorContextProvider: React.FC<{
 
     const init = useCallback(async () => {
         const _selector = await setupWalletSelector({
-            network: "testnet",
+            network: "mainnet",
             debug: true,
             modules: [
                 setupNightly() as any,
@@ -80,7 +80,7 @@ export const WalletSelectorContextProvider: React.FC<{
                 setupHereWallet(),
                 setupMeteorWallet(),
                 setupBitteWallet({
-                    walletUrl: "https://testnet.wallet.bitte.ai",
+                    walletUrl: "https://mainnet.wallet.bitte.ai",
                     callbackUrl: process.env.NEXTAUTH_URL,
                     deprecated: false,
                 }),

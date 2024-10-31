@@ -69,15 +69,15 @@ export async function POST(request: Request) {
       const [account] = item.name.split('::');
       if (item.chain == 'near' && item.typeMethod == 'call') {
         tool[
-          item.typeName +
-            'o0' +
-            item.typeMethod +
-            'o0' +
+          'cT' +
+            '_' +
+            'c' +
+            '_' +
+            'n' +
+            '_' +
             item.methods +
-            'o0' +
-            item.chain +
-            'o0' +
-            item.network
+            '_' +
+            account.replace('.near', '')
         ] = {
           description: item.description,
           parameters: z.object(ParametersSchema),
@@ -85,15 +85,15 @@ export async function POST(request: Request) {
       }
       if (item.chain == 'near' && item.typeMethod == 'view') {
         tool[
-          item.typeName +
-            'o0' +
-            item.typeMethod +
-            'o0' +
+          'cT' +
+            '_' +
+            'v' +
+            '_' +
+            'n' +
+            '_' +
             item.methods +
-            'o0' +
-            item.chain +
-            'o0' +
-            account
+            '_' +
+            account.replace('.near', '')
         ] = {
           description: item.description,
           parameters: z.object(ParametersSchema),

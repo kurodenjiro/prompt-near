@@ -146,23 +146,24 @@ export async function POST(request: Request) {
       //if view return data
     }
     if (item.typeName == 'widgetTool') {
-      console.log('aaaaa',item)
-      const filteredObj: any = item.args
-        ? convertParamsToZod(item.args)
-        : {};
+      const filteredObj: any = item.args ? convertParamsToZod(item.args) : {};
       const ParametersSchema: any = Object.fromEntries(
         Object.entries(filteredObj).filter(
           ([key, value]) => value !== undefined
         )
       );
 
-      tool[item.typeName + '_' + item.typeFunction + '_' + generateId()] = {
+      tool[item.typeName + '0-' + generateId()] = {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersSchema: ParametersData) => {
-          console.log('aaaaa',ParametersSchema)
+          console.log(
+            'aaaaa',
+            item.typeName + '0-' + generateId()
+          );
           const prompt = `${item.prompts} ${JSON.stringify(ParametersSchema)}`;
           const code = await widgetWithArgs({ prompt });
+          console.log(code);
           return code;
         },
       };

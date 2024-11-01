@@ -117,12 +117,12 @@ export const Message = ({
                           <div key={toolCallId}>
                             {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
                               typeName == 'cTcn' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
-                              typeName == 'cTvn0' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
+                                typeName == 'cTvn0' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
 
-                                `Calling ${typeName == 'cTvn' ? 'Contract' :
-                                  typeName == 'widgetTool' ? 'Widget' :
-                                    typeName == 'apiTool' ? 'API Tool' :
-                                      'unknow Tool'}
+                                  `Calling ${typeName == 'cTvn' ? 'Contract' :
+                                    typeName == 'widgetTool' ? 'Widget' :
+                                      typeName == 'apiTool' ? 'API Tool' :
+                                        'unknow Tool'}
                                     ${toolCallId}`}
                           </div>
                         );

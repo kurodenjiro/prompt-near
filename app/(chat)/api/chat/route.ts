@@ -68,12 +68,8 @@ export async function POST(request: Request) {
         )
       );
       const [account] = item.name.split('::');
-      console.log(
-        `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}`
-      );
-      console.log(item.chain, item.typeMethod);
       tool[
-        `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}`
+        `cT${item.typeMethod == 'view' ? 'v' : 'c'}n0-${item.methods}0-${account.replace('.near', '')}0-${item.chain == 'near' ? 'n' : 'e'}`
       ] = {
         description: item.description,
         parameters: z.object(ParametersSchema),
@@ -119,6 +115,9 @@ export async function POST(request: Request) {
             };
             return `data: ${JSON.stringify(data)}`;
           }
+          if (item.chain == 'eth' && item.typeMethod == 'call') {
+            return `ETH calliing`;
+          }
           if (item.chain == 'eth' && item.typeMethod == 'view') {
             try {
               const web3 = new Web3('https://1rpc.io/eth');
@@ -157,10 +156,6 @@ export async function POST(request: Request) {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersSchema: ParametersData) => {
-          console.log(
-            'aaaaa',
-            item.typeName + '0-' + generateId()
-          );
           const prompt = `${item.prompts} ${JSON.stringify(ParametersSchema)}`;
           const code = await widgetWithArgs({ prompt });
           console.log(code);

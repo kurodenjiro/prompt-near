@@ -16,7 +16,7 @@ import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import '@/components/augmented/style.css';
 
-import { SmartAction } from './onchain'
+import { SmartAction, ChainSignature } from './onchain'
 import { ViewFrame } from './view-frame'
 
 export const Message = ({
@@ -111,13 +111,13 @@ export const Message = ({
                       const { toolName, toolCallId, state, args } = toolInvocation;
                       if (state === 'result') {
                         const { result } = toolInvocation;
-                        const [typeName, methods, account] = toolName.split('0-')
+                        const [typeName, methods, account, chain] = toolName.split('0-')
                         console.log(typeName, methods, account)
                         return (
                           <div key={toolCallId}>
                             {typeName == 'widgetTool' ? <ViewFrame code={result} /> :
-                              typeName == 'cTcn' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
-                                typeName == 'cTvn0' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
+                              typeName == 'cTcn' && chain == 'n' ? <SmartAction props={args} methods={methods} receiverId={account} /> :
+                                typeName == 'cTcn' && chain == 'e' ? <ChainSignature props={args} methods={methods} receiverId={account} /> :
 
                                   `Calling ${typeName == 'cTvn' ? 'Contract' :
                                     typeName == 'widgetTool' ? 'Widget' :

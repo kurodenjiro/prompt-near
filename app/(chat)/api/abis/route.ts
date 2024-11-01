@@ -17,13 +17,15 @@ function convertDataToNearABI(input: any, account: string) {
         .map((item: any) => {
           return {
             name: item.name,
-            kind: item.stateMutability == 'view' ? 'view' : 'call' ,
+            kind: item.stateMutability == 'view' ? 'view' : 'call',
             params: {
               serialization_type: 'json',
-              args: item.inputs.map((input: any) => ({
-                name: input.name,
-                type_schema: { type: input.type },
-              })),
+              args:
+                item.inputs &&
+                item.inputs.map((input: any) => ({
+                  name: input.name,
+                  type_schema: { type: input.type },
+                })),
             },
           };
 
@@ -54,8 +56,8 @@ export async function GET(req: NextRequest) {
       );
 
       const data = await response.json();
-
-      const nearABI = convertDataToNearABI(JSON.parse(data.result), account);
+      const res = JSON.parse(data.result);
+      const nearABI = convertDataToNearABI(res, account);
       return NextResponse.json(nearABI, { status: 200 });
     }
     return NextResponse.json(

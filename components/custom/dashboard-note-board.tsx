@@ -48,9 +48,8 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address, user
         size: WIDGET_SIZE.XS_SMALL,
         userId: user?.id as string,
         id: '1',
-        index: '1'
+        index: '3'
       });
-      addImageWidget('/assets/background-new.jpg');
       addWidget({
         type: WIDGET_TYPES.TEXT,
         content: 'To',
@@ -59,7 +58,7 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address, user
         id: '2',
         index: '2'
       });
-      
+      addImageWidget('/assets/background-new.jpg','1');
       localStorage.setItem('activeUser', 'true');
       loadWidgets();
     }

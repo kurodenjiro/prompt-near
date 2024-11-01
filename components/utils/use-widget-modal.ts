@@ -70,7 +70,7 @@ interface IWidgetModalStore {
   updateWidget: (widgetId: string, widget: Partial<Widget>) => Promise<void>;
   moveWidget: (widgetId: number, newIndex: number) => Promise<void>;
   isImageUploading: boolean;
-  addImageWidget: (imageData: string) => Promise<void>;
+  addImageWidget: (imageData: string,index?: string) => Promise<void>;
 }
 
 export const useWidgetModal = create(
@@ -168,7 +168,7 @@ export const useWidgetModal = create(
         }));
       },
       isImageUploading: false,
-      addImageWidget: async (imageData: string) => {
+      addImageWidget: async (imageData: string,index?: string) => {
         const state = get();
         if (!state.userId) return;
 
@@ -185,7 +185,7 @@ export const useWidgetModal = create(
             createdAt: new Date(),
             content: null,
             description: null,
-            index: `${state.widgets.length + 1}`,
+            index:index || `${state.widgets.length + 1}`,
           };
 
           const response = await fetch('/api/widgets', {

@@ -82,6 +82,7 @@ const DashboardWidgetTools: FC<DashboardWidgetToolsProps> = ({ className, widget
     };
 
     addWidget(newWidget);
+    loadWidgets();
   };
 
   return (

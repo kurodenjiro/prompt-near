@@ -13,7 +13,7 @@ import WidgetFrame2 from '@/public/assets/svgs/widget-frame-2.svg';
 import { User } from '@/db/schema';
 interface WidgetOption {
   id: string;
-  type: string;
+  typeName: string;
   name: string;
   tool: any;
   icon: string;
@@ -27,7 +27,7 @@ type WidgetSelectionModalProps = {
 };
 
 export const WidgetSelectionModal: FC<WidgetSelectionModalProps> = ({ className, user }) => {
-  const { isOpen, closeWidgetModal, addWidget } = useWidgetModal();
+  const { isOpen, closeWidgetModal, addWidget, loadWidgets } = useWidgetModal();
   const [widgetOptions, setWidgetOptions] = useState<WidgetOption[]>([]);
   const [selectedWidget, setSelectedWidget] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,19 +69,20 @@ export const WidgetSelectionModal: FC<WidgetSelectionModalProps> = ({ className,
   const handleAddWidget = () => {
     if (selectedWidget) {
       const widgetToAdd = widgetOptions.find(widget => widget.id === selectedWidget);
-
+      //console.log('widgetToAdd', widgetToAdd);
       if (widgetToAdd) {
-        const sizes = ['small', 'medium', 'large'];
-        const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
         const widgetWithSize = { 
-          ...widgetToAdd, 
+          code: widgetToAdd.code, 
           size: 'fit', 
-          index: widgetOptions?.length,
+          index: widgetOptions?.length.toString(),
+          userId: user?.id as string,
+          type: widgetToAdd.typeName,
+          id: Date.now().toString()
         };
 
-        //@ts-ignore
         addWidget(widgetWithSize);
         closeWidgetModal();
+        loadWidgets();
       }
     }
   };

@@ -6,6 +6,7 @@ import { getUser } from '@/db/queries';
 const Profile = async ({ params }: { params: any }) => {
   const { id } = await params;
   const [user] = await getUser(id)
+  console.log(user)
   //get userId by username ;
   return (
     <div className={'flex w-full grow items-center justify-center py-4'}>

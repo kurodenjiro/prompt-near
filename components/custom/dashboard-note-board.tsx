@@ -95,15 +95,6 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address, user
     setIsShowDeletePopup(false);
   };
 
-  useEffect(() => {
-    console.log("widgets",widgets)
-    if (widgets.length === 0) {
-      setWidgetsList(DUMMY_WIDGET_LIST);
-    } else {
-      setWidgetsList(widgets);
-    }
-  }, [widgets]);
-
   const handleClickDelete = () => {
     setIsShowDeletePopup(true);
   };

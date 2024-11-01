@@ -8,6 +8,13 @@
       "when": 1730431471191,
       "tag": "0000_small_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1730443281363,
+      "tag": "0001_easy_mariko_yashida",
+      "breakpoints": true
     }
   ]
 }

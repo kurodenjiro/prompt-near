@@ -34,45 +34,45 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
   const [isLoadingTools, setIsLoadingTools] = useState(true);
   const [isLoadingWidget, setIsLoadingWidget] = useState(true);
 
-  // const createDefaultAgent = useCallback(async () => {
+  const createDefaultAgent = useCallback(async () => {
 
-  //   const defaultAgent = {
-  //     name: 'Staking Agent',
-  //     description: 'This is a staking agent.',
-  //     intro: 'Hello! I am your staking agent.',
-  //     tool: [toolIds, widgetIds],
-  //     prompt: `create button action stake 0.1 Near to ${user?.username}`,
-  //     userId: user?.id,
-  //     avatar: '/assets/images/avatar/logo_near.jpg',
-  //     suggestedActions: [
-  //       {
-  //         title: 'Stake APT',
-  //         description: 'Stake 0.1 APT',
-  //         content: `create button action stake 0.1 aptos to ${user?.username}`
-  //       },
-  //       {
-  //         title: 'Transfer APT',
-  //         description: 'Send 0.1 APT to 0x1',
-  //         content: `create button action transfer 0.1 Near to user?.username`
-  //       },
-  //       {
-  //         title: 'View Balance',
-  //         description: 'View my balance.',
-  //         content: `create label view balance for ${user?.username}`
-  //       },
-  //       {
-  //         title: 'View Transactions',
-  //         description: 'View my transaction history.',
-  //         content: `create label view total transactions for ${user?.username}`
-  //       }
-  //     ],
-  //     createdAt: Date.now(),
-  //     address: user?.username
-  //   };
-
-  //   await createAgentAPI(defaultAgent as any);
-  //   fetchAgents();
-  // }, [toolIds, widgetIds]);
+    const defaultAgent = {
+      name: 'Staking Agent',
+      description: 'This is a staking agent.',
+      intro: 'Hello! I am your staking agent.',
+      tool: (toolIds && widgetIds) ? [toolIds, widgetIds] : [],
+      prompt: `create button action stake 0.1 NEAR to ${user?.username}`,
+      userId: user?.id,
+      avatar: '/logo_near.jpg',
+      suggestedActions: [
+        {
+          title: 'Stake NEAR',
+          description: 'Stake 0.1 NEAR',
+          content: `create button action stake 0.1 NEAR to ${user?.username}`
+        },
+        {
+          title: 'Transfer NEAR',
+          description: 'Send 0.1 NEAR to 0x1',
+          content: `create button action transfer 0.1 NEAR to user?.username`
+        },
+        {
+          title: 'View Balance',
+          description: 'View my balance.',
+          content: `create label view balance for ${user?.username}`
+        },
+        {
+          title: 'View Transactions',
+          description: 'View my transaction history.',
+          content: `create label view total transactions for ${user?.username}`
+        }
+      ],
+      createdAt: Date.now()
+    };
+    if (!isLoading) {
+      await createAgentAPI(defaultAgent as any);
+      fetchAgents();
+    }
+  }, [toolIds, widgetIds, isLoading]);
 
   // const fetchTools = useCallback(async () => {
   //   setIsLoadingTools(true);
@@ -96,26 +96,26 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
   //   fetchTools();
   // }, [fetchTools]);
 
-  // const createAgentAPI = async (agentData: {
-  //   name: string;
-  //   description: string;
-  //   intro: string;
-  //   tool: string[];
-  //   prompt: string;
-  //   userId: string;
-  //   createdAt: number;
-  //   suggestedActions: any[];
-  //   avatar: string;
-  // }) => {
-  //   try {
-  //     const response = await axios.post('/api/agents', agentData);
+  const createAgentAPI = async (agentData: {
+    name: string;
+    description: string;
+    intro: string;
+    tool: string[];
+    prompt: string;
+    userId: string;
+    createdAt: number;
+    suggestedActions: any[];
+    avatar: string;
+  }) => {
+    try {
+      const response = await axios.post('/api/agents', agentData);
 
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error('Error creating agent:', error);
-  //     throw error;
-  //   }
-  // };
+      return response.data;
+    } catch (error) {
+      console.error('Error creating agent:', error);
+      throw error;
+    }
+  };
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
@@ -238,13 +238,13 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
   //   }
   // }, [saveWidget, toolIds]);
 
-  // useEffect(() => {
-  //   //console.log('Checking to create default agent:', { toolIds, widgetIds, agents });
-  //   // Check if both toolIds and widgetIds are set and agents are empty
-  //   if (toolIds?.length > 0 && widgetIds?.length > 0 && agents.length === 0) {
-  //     createDefaultAgent();
-  //   }
-  // }, [createDefaultAgent, widgetIds, agents.length, toolIds]);
+  useEffect(() => {
+    //console.log('Checking to create default agent:', { toolIds, widgetIds, agents });
+    // Check if both toolIds and widgetIds are set and agents are empty
+    if (agents.length === 0 && !isLoading) {
+      createDefaultAgent();
+    }
+  }, [createDefaultAgent, isLoading]);
 
   const handleAgentClick = (agent: any) => {
     console.log(agent);

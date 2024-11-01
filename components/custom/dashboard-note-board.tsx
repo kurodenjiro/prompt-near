@@ -106,7 +106,7 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address, user
     setSelectedWidgetId(null);
   };
 
-  console.log('widgets', widgets);
+  //console.log('widgets', widgets);
 
   return (
     <DndProvider backend={HTML5Backend}>

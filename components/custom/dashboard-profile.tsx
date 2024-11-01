@@ -140,6 +140,8 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
     signOut();
     const wallet = await selector.wallet();
     await wallet.signOut();
+    localStorage.removeItem('activeUser');
+    localStorage.removeItem('widget-storage');
   }
   
 

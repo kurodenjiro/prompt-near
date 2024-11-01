@@ -9,20 +9,26 @@ export async function POST(request: Request) {
       prompt: widgetPrompt,
       tool_ids: tool_ids,
     };
-
+    console.log('Searching tools with data:', data);
     const tools = await searchTool(data);
-    console.log(tools);
+    console.log('Search tools result:', tools);
 
     const prompts = widgetPrompt + tools;
+    console.log('Creating widget with prompt:', prompts);
     const code = await widgetTool({ prompt: prompts, tool_ids });
 
-    console.log('Created widget', code);
+    console.log('Created widget:', code);
 
     return NextResponse.json({ code });
   } catch (error) {
     console.error('Error creating widget:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
     return NextResponse.json(
-      { error: `Failed to create widget: ${error}` },
+      { 
+        error: `Failed to create widget: ${errorMessage}`,
+        stack: errorStack 
+      },
       { status: 500 }
     );
   }

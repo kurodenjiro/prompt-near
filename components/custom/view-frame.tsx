@@ -97,6 +97,7 @@ export const ViewFrameDashboard = ({ code, id }: { code: string; id: string }) =
   const nearProvider = new providers.JsonRpcProvider({
     url: `https://rpc.mainnet.near.org`,
   });
+  //  
   return (
     <>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>

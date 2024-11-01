@@ -355,7 +355,7 @@ export function Tool({
     setWidgetParams([])
     widgetParamsForm.reset()
   }, [widgetForm,widgetParamsForm]);
-
+  //typeName, name, description, userId, id, args, chain, network,
   const handleSaveWidget = async () => {
     try {
       const widgetData = {
@@ -372,6 +372,8 @@ export function Tool({
           };
           return acc;
         }, {}) : {},
+        chain: form.getValues('chain')[0],
+        network: form.getValues('network')[0],
         userId: userId
       };
 

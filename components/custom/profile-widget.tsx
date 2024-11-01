@@ -14,6 +14,9 @@ import DashboardNotesBoard from '@/components/custom/dashboard-note-board';
 import { toast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { User } from '@/db/schema';
+import ChatPopup from '@/components/custom/chat-popup';
+import axios from 'axios';
+
 type ProfileWidgetProps = {
   user: User;
   className?: string
@@ -55,6 +58,22 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({ className, user }) => {
     setIsOpenModal(true);
   };
 
+  const fetchAgents = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      if (user?.id) {
+        const response = await axios.get(`/api/agents?userId=${user?.id}`);
+        const fetchedAgents = response.data;
+        console.log('fetchedAgents', fetchedAgents);
+        setAgents(fetchedAgents);
+      }
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <BoderImage
@@ -65,11 +84,19 @@ const ProfileWidget: FC<ProfileWidgetProps> = ({ className, user }) => {
       <div className="w-full">
         <p className="px-8 py-4">Agent Creator ({agents.length})</p>
         <div className="flex flex-col gap-6 px-8 py-6">
-          <DashboardAgentList items={agents} onClick={() => { }} />
+          <DashboardAgentList items={agents} onClick={handleAgentClick} />
         </div>
         <Image src={line.src} alt="line" className="w-full" width={line.width} height={line.height} />
         <DashboardNotesBoard address={user.username} />
       </div>
+      {selectedAgent && (
+        <ChatPopup
+          visible={isOpenModal}
+          refetch={fetchAgents}
+          inforAgent={selectedAgent}
+          onClose={() => setIsOpenModal(false)}
+        />
+      )}
     </BoderImage>
   );
 };

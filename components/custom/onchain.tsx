@@ -106,7 +106,8 @@ export const ChainSignature = ({ props: data, methods, receiverId }: { props: an
     }
     const createChainSignature = async () => {
         //get abi
-        const wallet = await selector.wallet;
+        const wallet = await selector.wallet();
+    
         const contract = receiverId
         const MPC_CONTRACT = "v1.signer"
         console.log("contract", data, methods, abi, contract)
@@ -114,6 +115,7 @@ export const ChainSignature = ({ props: data, methods, receiverId }: { props: an
         const { transaction, payload } = await Eth.createPayload(senderAddress, contract, 0 as any, dataPayload);
 
         try {
+            // wallet dont have methodCall
             const { big_r, s, recovery_id } = await Eth.requestSignatureToMPC(wallet, MPC_CONTRACT, derivationPath, payload);
             const signedTransaction = await Eth.reconstructSignature(big_r, s, recovery_id, transaction);
 

@@ -499,7 +499,7 @@ export function Tool({
             <FormTextField
               error={errors.address}
               form={form}
-              label="Contract address"
+              label="Contract address (contract must be verified v2-verifier.sourcescan.near or ethscan)"
               name="address"
               isValid={isValid}
             />
@@ -632,10 +632,10 @@ export function Tool({
               name="description"
               isValid={apiToolForm.formState.isValid}
             />
-            <label htmlFor="apiToolSpec" className="text-xs text-white lg:text-[18px] mb-2">API Tool Specification</label>
+            <label htmlFor="apiToolSpec" className="text-xs text-white lg:text-[18px] mb-2">OpenAI Specification v3</label>
             <Textarea
               id="apiToolSpec"
-              placeholder={'Enter API Tool Specification'}
+              placeholder={'Enter OpenAI Specification v3'}
               rows={4}
               className="min-h-[120px] text-xs"
               //@ts-ignore

@@ -325,6 +325,7 @@ export async function searchTool({ prompt, tool_ids }: any) {
 
   const res = await chain.invoke({ input: prompt });
   if (res.tool_calls && res.tool_calls.length > 0) {
+    console.log(dataTools);
     return (
       ' with data : ' +
       JSON.stringify(

@@ -37,9 +37,9 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
   const createDefaultAgent = useCallback(async () => {
 
     const defaultAgent = {
-      name: 'Staking Agent',
-      description: 'This is a staking agent.',
-      intro: 'Hello! I am your staking agent.',
+      name: 'Happy Birthday Agent',
+      description: 'This is a birthday agent.',
+      intro: 'Hello! I am your birthday agent.',
       tool: (toolIds && widgetIds) ? [toolIds, widgetIds] : [],
       prompt: `create button action stake 0.1 NEAR to ${user?.username}`,
       userId: user?.id,

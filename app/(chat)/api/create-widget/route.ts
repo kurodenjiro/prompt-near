@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { searchTool, widgetTool } from '@/ai/widget-tool';
 
 export async function POST(request: Request) {
-  const { prompt, tool_ids } = await request.json();
+  
+
+  try {
+    const { prompt, tool_ids } = await request.json();
   const widgetPrompt = prompt;
   const data = {
     prompt: widgetPrompt,
@@ -15,10 +18,7 @@ export async function POST(request: Request) {
   const prompts = widgetPrompt + tools;
   const code = await widgetTool({ prompt: prompts, tool_ids });
 
-  console.log('Created widget', code);
-
   return NextResponse.json({ code });
-  try {
   } catch (error) {
     console.error('Error creating widget:', error);
     return NextResponse.json(

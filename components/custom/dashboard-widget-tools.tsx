@@ -11,16 +11,18 @@ import DashboardWidgetToolToggleButton from './dashboard-widget-tool-toggle-butt
 
 // Import the icons you need
 import { Image, LayoutGrid, FileEdit, Bot } from 'lucide-react';
+import { User } from '@/db/schema';
 
 interface DashboardWidgetToolsProps {
   widgetItem?: any;
   onCkick?: () => void;
-  className?: string
+  className?: string;
+  user?: User;
 };
 
-const DashboardWidgetTools: FC<DashboardWidgetToolsProps> = ({ className, widgetItem, onCkick }) => {
+const DashboardWidgetTools: FC<DashboardWidgetToolsProps> = ({ className, widgetItem, onCkick,user }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { openWidgetModal, addImageWidget, addWidget } = useWidgetModal();
+  const { openWidgetModal, addImageWidget, addWidget, setUserId, widgets, loadWidgets } = useWidgetModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleToggle = (isActive: boolean) => {
@@ -34,6 +36,7 @@ const DashboardWidgetTools: FC<DashboardWidgetToolsProps> = ({ className, widget
 
   const handleUploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('File input triggered');
+    setUserId(user?.id as string);
     const file = event.target.files?.[0];
 
     if (file) {
@@ -41,7 +44,8 @@ const DashboardWidgetTools: FC<DashboardWidgetToolsProps> = ({ className, widget
         const base64Image = await convertToBase64(file);
 
         console.log('Image converted to base64');
-        addImageWidget(base64Image);
+        await addImageWidget(base64Image);
+        await loadWidgets();
       } catch (error) {
         console.error('Error converting image:', error);
         // Handle error (e.g., show an error message to the user)
@@ -64,13 +68,17 @@ const DashboardWidgetTools: FC<DashboardWidgetToolsProps> = ({ className, widget
   };
 
   const handleAddInputWidget = () => {
+    //console.log('user', user?.id);
+    setUserId(user?.id as string);
     const newWidget = {
       id: Date.now().toString(),
       type: WIDGET_TYPES.INPUT,
       name: 'Input Widget',
       icon: 'ico-file-text-edit',
       code: 'default',
-      size: WIDGET_SIZE.SMALL
+      size: WIDGET_SIZE.SMALL,
+      index: `${widgets.length+1}`,
+      userId: user?.id as string
     };
 
     addWidget(newWidget);

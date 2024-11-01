@@ -5,7 +5,7 @@ import { desc, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import { user, chat, User, agent, Agent, tool, Tool } from './schema';
+import { user, chat, User, agent, Agent, tool, Tool, widget, Widget } from './schema';
 
 // Optionally, if not using username/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -274,6 +274,69 @@ export async function createWidgetTool({
     });
   } catch (error) {
     console.error('Failed to create user in database');
+    throw error;
+  }
+}
+
+export async function getWidgetsByUserId(userId: string) {
+  try {
+    return await db
+      .select()
+      .from(widget)
+      .where(eq(widget.userId, userId))
+      .orderBy(desc(widget.createdAt));
+  } catch (error) {
+    console.error('Failed to get widgets from database');
+    throw error;
+  }
+}
+
+export async function createWidget({
+  type,
+  name,
+  icon,
+  content,
+  size,
+  code,
+  description,
+  index,
+  userId,
+}: Widget) {
+  try {
+    return await db.insert(widget).values({
+      type,
+      name,
+      icon,
+      content,
+      size,
+      code,
+      description,
+      index,
+      userId,
+    });
+  } catch (error) {
+    console.error('Failed to create widget in database');
+    throw error;
+  }
+}
+
+export async function deleteWidget(id: string) {
+  try {
+    return await db.delete(widget).where(eq(widget.id, id));
+  } catch (error) {
+    console.error('Failed to delete widget from database');
+    throw error;
+  }
+}
+
+export async function updateWidget(id: string, updates: Partial<Widget>) {
+  try {
+    return await db
+      .update(widget)
+      .set(updates)
+      .where(eq(widget.id, id));
+  } catch (error) {
+    console.error('Failed to update widget in database');
     throw error;
   }
 }

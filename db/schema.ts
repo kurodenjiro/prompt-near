@@ -7,6 +7,8 @@ import {
   json,
   uuid,
   text,
+  integer,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -75,3 +77,21 @@ export type Agent = InferSelectModel<typeof agent>;
 export type Chat = Omit<InferSelectModel<typeof chat>, 'messages'> & {
   messages: Array<Message>;
 };
+
+export const widget = pgTable('Widget', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  type: varchar('type', { length: 64 }).notNull(),
+  name: varchar('name', { length: 256 }),
+  icon: varchar('icon', { length: 256 }),
+  content: text('content'),
+  size: varchar('size', { length: 64 }),
+  code: text('code'),
+  description: text('description'),
+  index: varchar('index', { length: 64 }),
+  userId: uuid('userId')
+    .notNull()
+    .references(() => user.id),
+});
+
+export type Widget = InferSelectModel<typeof widget>;

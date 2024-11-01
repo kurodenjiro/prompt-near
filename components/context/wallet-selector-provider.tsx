@@ -87,7 +87,7 @@ export const WalletSelectorContextProvider: React.FC<{
             ],
         });
         const _modal = setupModal(_selector, {
-            contractId: "forum.potlock.testnet",
+            contractId: "social.near",
         });
         const state = _selector.store.getState();
         setAccounts(state.accounts);

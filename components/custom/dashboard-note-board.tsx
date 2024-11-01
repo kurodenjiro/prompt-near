@@ -6,38 +6,79 @@ import CustomButton from '@/components/custom/custom-button';
 
 import AugmentedPopup from '@/components/augmented/components/augmented-popup';
 import { ViewFrameDashboard } from '@/components/custom/view-frame';
-import { useWidgetModal,DUMMY_WIDGET_LIST,WIDGET_SIZE,Widget } from '@/components/utils/use-widget-modal';
+import { useWidgetModal,WIDGET_SIZE, WIDGET_TYPES } from '@/components/utils/use-widget-modal';
 
 import Note from './dashboard-note';
 import DashboardWidgetTools from './dashboard-widget-tools';
+import { User } from '@/db/schema';
 
 interface DashboardNotesBoardProps {
   address?: string;
+  user?: User;
 };
 
-const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address }) => {
-  const { widgets, removeWidget, updateWidget } = useWidgetModal();
-  const [widgetsList, setWidgetsList] = useState<Widget[]>(widgets);
+const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address, user }) => {
+  const { widgets, loadWidgets, removeWidget, updateWidget, setUserId, addWidget, isImageUploading,addImageWidget } = useWidgetModal();
   const [isShowDeletePopup, setIsShowDeletePopup] = useState(false);
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
+  //const [updatedWidgets, setUpdatedWidgets] = useState<Widget[]>(widgets||[]);
 
-  // const checkIfWidgetHasButton = useCallback((code: string) => {
-  //   //console.log('code', code);
-  //   return code.toLowerCase().includes('<a') || code.toLowerCase().includes('a>');
-  // }, []);
+  useEffect(() => {
+    if (user) {
+      setUserId(user.id as string);
+      loadWidgets();
+      //setUpdatedWidgets(widgets || []);
+    }
+  }, [user, setUserId, loadWidgets]);
+  
+  useEffect(() => {
+    if (isImageUploading) {
+      setUserId(user?.id as string);
+      loadWidgets();
+    }
+  }, [isImageUploading, loadWidgets, user]);
+  
+
+  useEffect(() => {
+    if (widgets.length == 0 && !localStorage.getItem('activeUser')) {
+      setUserId(user?.id as string);
+      addWidget({
+        type: WIDGET_TYPES.TEXT,
+        content: 'Welcome',
+        size: WIDGET_SIZE.XS_SMALL,
+        userId: user?.id as string,
+        id: '1',
+        index: '1'
+      });
+      addImageWidget('/assets/background-new.jpg');
+      addWidget({
+        type: WIDGET_TYPES.TEXT,
+        content: 'To',
+        size: WIDGET_SIZE.XS_SMALL,
+        userId: user?.id as string,
+        id: '2',
+        index: '2'
+      });
+      
+      localStorage.setItem('activeUser', 'true');
+      loadWidgets();
+    }
+  }, [widgets]);
+
+  //console.log('widgets', updatedWidgets);
 
   const moveNote = (fromIndex: number, toIndex: number) => {
     //moveWidget(fromIndex, toIndex);
-    const updatedWidgets = [...widgetsList];
+    const updatedWidgets = [...widgets];
 
-    console.log('🚀 ~ moveNote ~ updatedWidgets:', updatedWidgets);
+    console.log('🚀 ~ moveNote ~ widgets:', updatedWidgets);
     const [movedWidget] = updatedWidgets.splice(fromIndex, 1);
 
     console.log('🚀 ~ moveNote ~ movedWidget:', movedWidget);
 
     updatedWidgets.splice(toIndex, 0, movedWidget);
     console.log('updatedWidgets', updatedWidgets);
-    setWidgetsList(updatedWidgets);
+    //setUpdatedWidgets(updatedWidgets);
   };
 
   const handleWidgetClick = (widgetId: string) => {
@@ -54,14 +95,6 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address }) =>
     setIsShowDeletePopup(false);
   };
 
-  useEffect(() => {
-    if (widgets.length === 0) {
-      setWidgetsList(DUMMY_WIDGET_LIST);
-    } else {
-      setWidgetsList(widgets);
-    }
-  }, [widgets]);
-
   const handleClickDelete = () => {
     setIsShowDeletePopup(true);
   };
@@ -74,16 +107,18 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address }) =>
     setSelectedWidgetId(null);
   };
 
+  console.log('widgets', widgets);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div key={widgetsList.length} className="flex min-h-[200px] flex-wrap px-6">
-        {widgetsList.map((widget, index) => (
+      <div key={widgets.length} className="flex min-h-[200px] flex-wrap px-6">
+        {widgets.map((widget, index) => (
           <Note
             key={index}
             id={widget.id}
             index={index}
             moveNote={moveNote}
-            size={widget.size || WIDGET_SIZE.MEDIUM}
+            size={widget.size as WIDGET_SIZE || WIDGET_SIZE.MEDIUM}
             isSelected={selectedWidgetId === widget.id}
             onClick={() => handleWidgetClick(widget.id)}
             onClickOutside={handleClickOutside}
@@ -123,7 +158,7 @@ const DashboardNotesBoard: React.FC<DashboardNotesBoardProps> = ({ address }) =>
         </div>
       </AugmentedPopup>
       <div className="px-8 py-6">
-        <DashboardWidgetTools />
+        <DashboardWidgetTools user={user as User}/>
       </div>
     </DndProvider>
   );

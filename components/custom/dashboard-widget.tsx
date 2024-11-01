@@ -74,48 +74,48 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
   //   fetchAgents();
   // }, [toolIds, widgetIds]);
 
-  const fetchTools = useCallback(async () => {
-    setIsLoadingTools(true);
-    try {
-      const userId = user?.id;
-      const response = await axios.get(`/api/tools?userId=${userId}`);
-      if (response) {
-        const contractTools = response.data.filter((tool: any) => tool.type === 'contractTool');
-        setTools(contractTools);
-      }
+  // const fetchTools = useCallback(async () => {
+  //   setIsLoadingTools(true);
+  //   try {
+  //     const userId = user?.id;
+  //     const response = await axios.get(`/api/tools?userId=${userId}`);
+  //     if (response) {
+  //       const contractTools = response.data.filter((tool: any) => tool.type === 'contractTool');
+  //       setTools(contractTools);
+  //     }
 
-      //console.log('contractTools', contractTools);
-    } catch (error) {
-      console.error('Error fetching tools:', error);
-    } finally {
-      setIsLoadingTools(false);
-    }
-  }, []);
+  //     //console.log('contractTools', contractTools);
+  //   } catch (error) {
+  //     console.error('Error fetching tools:', error);
+  //   } finally {
+  //     setIsLoadingTools(false);
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    fetchTools();
-  }, [fetchTools]);
+  // useEffect(() => {
+  //   fetchTools();
+  // }, [fetchTools]);
 
-  const createAgentAPI = async (agentData: {
-    name: string;
-    description: string;
-    intro: string;
-    tool: string[];
-    prompt: string;
-    userId: string;
-    createdAt: number;
-    suggestedActions: any[];
-    avatar: string;
-  }) => {
-    try {
-      const response = await axios.post('/api/agents', agentData);
+  // const createAgentAPI = async (agentData: {
+  //   name: string;
+  //   description: string;
+  //   intro: string;
+  //   tool: string[];
+  //   prompt: string;
+  //   userId: string;
+  //   createdAt: number;
+  //   suggestedActions: any[];
+  //   avatar: string;
+  // }) => {
+  //   try {
+  //     const response = await axios.post('/api/agents', agentData);
 
-      return response.data;
-    } catch (error) {
-      console.error('Error creating agent:', error);
-      throw error;
-    }
-  };
+  //     return response.data;
+  //   } catch (error) {
+  //     console.error('Error creating agent:', error);
+  //     throw error;
+  //   }
+  // };
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
@@ -148,50 +148,50 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
     }
   };
 
-  const createToolAPI = useCallback(async () => {
-    const toolData = {
-      id: crypto.randomUUID(),
-      typeName: 'contractTool',
-      name: `0x1::delegation_pool::add_stake`,
-      description:
-        "The `add_stake` function allows a delegator to add a specified amount of coins to the delegation pool. This amount is converted into shares, which represent the delegator's stake in the pool. The function ensures that the delegator is allowlisted and synchronizes the delegation pool with the underlying stake pool before executing the addition. The function also calculates and deducts any applicable fees from the added stake, ensuring that the delegator's balance is updated accordingly.",
-      params: {
-        user: {
-          type: 'address',
-          description: 'The address of the delegator.'
-        },
-        amount: {
-          type: 'u64',
-          description: 'The amount of coins to be added to the delegation pool.'
-        }
-      },
-      type_params: [],
-      typeFunction: 'entry',
-      functions: 'add_stake',
-      address: '0x1',
-      userId: user?.id
-    };
+  // const createToolAPI = useCallback(async () => {
+  //   const toolData = {
+  //     id: crypto.randomUUID(),
+  //     typeName: 'contractTool',
+  //     name: `0x1::delegation_pool::add_stake`,
+  //     description:
+  //       "The `add_stake` function allows a delegator to add a specified amount of coins to the delegation pool. This amount is converted into shares, which represent the delegator's stake in the pool. The function ensures that the delegator is allowlisted and synchronizes the delegation pool with the underlying stake pool before executing the addition. The function also calculates and deducts any applicable fees from the added stake, ensuring that the delegator's balance is updated accordingly.",
+  //     params: {
+  //       user: {
+  //         type: 'address',
+  //         description: 'The address of the delegator.'
+  //       },
+  //       amount: {
+  //         type: 'u64',
+  //         description: 'The amount of coins to be added to the delegation pool.'
+  //       }
+  //     },
+  //     type_params: [],
+  //     typeFunction: 'entry',
+  //     functions: 'add_stake',
+  //     address: '0x1',
+  //     userId: user?.id
+  //   };
 
-    //console.log('Tool data:', toolData);
-    try {
-      await uploadDataToApi(toolData);
+  //   //console.log('Tool data:', toolData);
+  //   try {
+  //     await uploadDataToApi(toolData);
 
-      if (toolData.id) {
-        setToolIds(toolData.id); // Ensure toolIds is set only if toolId is valid
-        console.log('toolData.id', toolData.id);
-      } else {
-        console.error('Failed to create tool, toolId is null');
-      }
-    } catch (error) {
-      console.error('Error creating tool:', error);
-    }
-  }, []);
+  //     if (toolData.id) {
+  //       setToolIds(toolData.id); // Ensure toolIds is set only if toolId is valid
+  //       console.log('toolData.id', toolData.id);
+  //     } else {
+  //       console.error('Failed to create tool, toolId is null');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error creating tool:', error);
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    if (!isLoadingTools && tools.length === 0) {
-      createToolAPI();
-    }
-  }, [isLoadingTools, tools, createToolAPI]);
+  // useEffect(() => {
+  //   if (!isLoadingTools && tools.length === 0) {
+  //     createToolAPI();
+  //   }
+  // }, [isLoadingTools, tools, createToolAPI]);
 
   const saveWidget = useCallback(async () => {
     setIsLoadingWidget(true);
@@ -277,7 +277,7 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
           )}
         </div>
         <Image src={line.src} alt="line" className="w-full" width={line.width} height={line.height} />
-        <DashboardNotesBoard />
+        <DashboardNotesBoard user={user as User} />
       </div>
       {selectedAgent && (
         <ChatPopup

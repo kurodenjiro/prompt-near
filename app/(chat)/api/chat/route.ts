@@ -146,8 +146,9 @@ export async function POST(request: Request) {
       //if view return data
     }
     if (item.typeName == 'widgetTool') {
-      const filteredObj: any = item.params
-        ? convertParamsToZod(item.params)
+      console.log('aaaaa',item)
+      const filteredObj: any = item.args
+        ? convertParamsToZod(item.args)
         : {};
       const ParametersSchema: any = Object.fromEntries(
         Object.entries(filteredObj).filter(
@@ -159,6 +160,7 @@ export async function POST(request: Request) {
         description: item.description,
         parameters: z.object(ParametersSchema),
         execute: async (ParametersSchema: ParametersData) => {
+          console.log('aaaaa',ParametersSchema)
           const prompt = `${item.prompts} ${JSON.stringify(ParametersSchema)}`;
           const code = await widgetWithArgs({ prompt });
           return code;

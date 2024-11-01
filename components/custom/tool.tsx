@@ -358,6 +358,7 @@ export function Tool({
   //typeName, name, description, userId, id, args, chain, network,
   const handleSaveWidget = async () => {
     try {
+      
       const widgetData = {
         typeName: 'widgetTool',
         name: widgetForm.getValues('name'),
@@ -365,7 +366,7 @@ export function Tool({
         prompt: widgetPrompt,
         code: widgetCode,
         toolWidget: selectedWidgetTools,
-        params: widgetParamsForm.getValues('params').some((param: any) => param.name.length > 0) ? widgetParamsForm.getValues('params').reduce((acc: any, param: any) => {
+        args: widgetParamsForm.getValues('params').some((param: any) => param.name.length > 0) ? widgetParamsForm.getValues('params').reduce((acc: any, param: any) => {
           acc[param.name] = {
             description: param.description,
             type: param.type
@@ -496,14 +497,15 @@ export function Tool({
 
         <AugmentedPopup visible={isOpenCreateTool} textHeading={'Create Tool from contact'} onClose={handleClose}>
           <form className="flex max-h-[80vh] flex-col gap-3 overflow-y-auto p-8">
+          <p>contract must be verified v2-verifier.sourcescan.near or ethscan</p>
             <FormTextField
               error={errors.address}
               form={form}
-              label="Contract address (contract must be verified v2-verifier.sourcescan.near or ethscan)"
+              label="Contract address "
               name="address"
               isValid={isValid}
             />
-
+            
             <div className="mb-4">
               <p className="mb-2 text-xl text-white">Chain</p>
               <DropdownSelect

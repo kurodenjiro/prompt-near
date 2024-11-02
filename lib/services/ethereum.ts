@@ -122,7 +122,7 @@ export class Ethereum {
   }
 
   async requestSignatureToMPC(
-    wallet: any, // Replace `any` with specific wallet type if available
+    callMethod: any, // Replace `any` with specific wallet type if available
     contractId: string,
     path: string,
     ethPayload: Buffer
@@ -130,7 +130,7 @@ export class Ethereum {
     sessionStorage.setItem('derivation', path);
 
     const payload = Array.from(ethPayload);
-    const { big_r, s, recovery_id } = await wallet.callMethod({
+    const { big_r, s, recovery_id } = await callMethod({
       contractId,
       method: 'sign',
       args: { request: { payload, path, key_version: 0 } },

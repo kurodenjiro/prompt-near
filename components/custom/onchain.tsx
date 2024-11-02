@@ -6,6 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import { useWalletSelector } from "@/components/context/wallet-selector-provider"
 import { Ethereum } from "@/lib/services/ethereum";
+import { providers, utils, transactions } from 'near-api-js';
+
 import { useDebounce } from "@/hooks/use-debounce"
 export const SmartAction = ({ props: data, methods, receiverId }: { props: any, methods: string, receiverId: string }) => {
 
@@ -104,9 +106,33 @@ export const ChainSignature = ({ props: data, methods, receiverId }: { props: an
 
         setAbi(data)
     }
+
+    const callMethod = async ({ contractId, method, args = {}, gas = '30000000000000', deposit = '0' }: { contractId: string, method: string, args?: Record<string, any>, gas?: string, deposit?: string }): Promise<any> => {
+        const selectedWallet = await selector.wallet();
+        const url = `https://rpc.mainnet.near.org`;
+        const provider = new providers.JsonRpcProvider({ url });
+
+        const outcome = await selectedWallet.signAndSendTransaction({
+            receiverId: contractId,
+            actions: [
+                {
+                    type: 'FunctionCall',
+                    params: {
+                        methodName: method,
+                        args,
+                        gas,
+                        deposit,
+                    },
+                },
+            ],
+        });
+
+        return providers.getTransactionLastResult(outcome as any);
+    };
     const createChainSignature = async () => {
         //get abi
-        const wallet = await selector.wallet;
+        const wallet = await selector.wallet();
+
         const contract = receiverId
         const MPC_CONTRACT = "v1.signer"
         console.log("contract", data, methods, abi, contract)
@@ -114,7 +140,8 @@ export const ChainSignature = ({ props: data, methods, receiverId }: { props: an
         const { transaction, payload } = await Eth.createPayload(senderAddress, contract, 0 as any, dataPayload);
 
         try {
-            const { big_r, s, recovery_id } = await Eth.requestSignatureToMPC(wallet, MPC_CONTRACT, derivationPath, payload);
+            // wallet dont have methodCall
+            const { big_r, s, recovery_id } = await Eth.requestSignatureToMPC(callMethod, MPC_CONTRACT, derivationPath, payload);
             const signedTransaction = await Eth.reconstructSignature(big_r, s, recovery_id, transaction);
 
         } catch (e) {

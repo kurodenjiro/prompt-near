@@ -1,0 +1,1 @@
+ALTER TABLE "Widget" ALTER COLUMN "index" SET DATA TYPE varchar(64);

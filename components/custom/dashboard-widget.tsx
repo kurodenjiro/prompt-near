@@ -37,7 +37,7 @@ const DashboardWidget: FC<DashboardWidgetProps> = ({ className, user }) => {
   const createDefaultAgent = useCallback(async () => {
 
     const defaultAgent = {
-      name: 'Happy Birthday Agent',
+      name: 'Hap..day Agent',
       description: 'This is a birthday agent.',
       intro: 'Hello! I am your birthday agent.',
       tool: (toolIds && widgetIds) ? [toolIds, widgetIds] : [],

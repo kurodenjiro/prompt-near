@@ -22,17 +22,17 @@ export const simulateBotResponse = (userMessage: string): Promise<string> => {
               type: 'function',
               function: {
                 name: 'transfer',
-                description: 'Transfer APT to a specific address',
+                description: 'Transfer Near to a specific address',
                 parameters: {
                   type: 'object',
                   properties: {
                     address: {
                       type: 'string',
-                      description: 'The address to transfer APT to'
+                      description: 'The address to transfer Near to'
                     },
                     amount: {
                       type: 'string',
-                      description: 'The amount of APT to transfer'
+                      description: 'The amount of Near to transfer'
                     }
                   },
                   required: ['address', 'amount']
@@ -46,7 +46,7 @@ export const simulateBotResponse = (userMessage: string): Promise<string> => {
           if (botResponse.choices[0]?.message?.tool_calls) {
             const toolCall = botResponse.choices[0].message.tool_calls[0];
             const { address, amount } = JSON.parse(toolCall.function.arguments);
-            resolve(`Transfer request: ${amount} APT to ${address}`);
+            resolve(`Transfer request: ${amount} Near to ${address}`);
           } else {
             const botResponseText =
               botResponse.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";

@@ -22,7 +22,6 @@ import { Textarea } from '@/components/ui/textarea';
 import MultiSelectTools from '../common/multi-select';
 import { CHAIN_LIST } from '@/components/constants/chain.constant';
 
-const COIN_LIST_URL = 'https://raw.githubusercontent.com/AnimeSwap/coin-list/main/aptos/mainnet.js';
 
 
 interface WidgetParam {

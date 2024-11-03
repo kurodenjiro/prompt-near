@@ -226,7 +226,7 @@ const DashboardProfile = ({ user }: { user: User | null }) => {
         </div>
         <AugmentedPopup visible={isOpenSend} onClose={handleCloseSend} textHeading={'Send'}>
           <div className="flex max-h-[80vh] flex-col gap-5 overflow-y-auto p-8">
-            <p className="mb-5 text-white">Send APT to another address</p>
+            <p className="mb-5 text-white">Send Near to another address</p>
             <input
               type="text"
               placeholder="Receiver Address"

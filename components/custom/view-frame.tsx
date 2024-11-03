@@ -15,7 +15,6 @@ export const ViewFrame = ({ code }: { code: string }) => {
   };
 
   const truncateAddressesInCode = (code: string) => {
-    // Regular expression to match Aptos-style addresses (0x followed by 64 hexadecimal characters)
     const addressRegex = /0x[a-fA-F0-9]{64}/g;
 
     return code.replace(addressRegex, match => truncateAddress(match));
